@@ -6,7 +6,7 @@ A BI board for a privately owned, export-oriented Chinese PV manufacturer decidi
 markets to prioritise and how much capacity to run. Public trade and production data plus news feed a
 validated forecast and three scenarios; options are tested against them.
 
-**Live board:** `https://<github-user>.github.io/china-solar-bi/` (fill in after first deploy)
+**Live board:** https://raulnjjoshi-hub.github.io/china-solar-bi/
 **Backup:** `site/` folder in the submission zip; open `site/index.html` in any browser (works offline).
 
 ## How to open and use
