@@ -62,5 +62,9 @@ site/{index.html,data.js}  .github/workflows/build.yml  README.md  LOG.md  docs/
 
 ## Conventions
 - No external CDNs or fonts (offline backup must work). Plain HTML/CSS/JS.
+- Fonts are bundled in site/fonts (IBM Plex Sans, OFL licence). All design tokens (colours, type scale,
+  spacing) are CSS variables in :root of index.html; all charts go through one chart() function + THEME object.
+- Scenario colours by meaning: base slate #334155, challenging red #B42318, optimistic teal #0B8F7A
+  (checked for colour-blind separation); amber #A64B05 is the only accent.
 - Keep facts and judgement separate in the UI. Show source IDs next to evidence.
 - Commit messages describe the analytical or usability change; they double as log evidence.
