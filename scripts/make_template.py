@@ -245,6 +245,8 @@ table("Sources", "Sources (dataset level)",
        ("prop", ["S6", "Monthly electricity data", "Ember", "", "https://ember-energy.org/data/ (add dataset link)", "China, solar generation", "TWh", "Monthly", "", None, "", "", "Demand cross-check", "Candidate - not verified", ""]),
        ("prop", ["S7", "World Development Indicators", "World Bank", "WDI (pick indicators)", "https://databank.worldbank.org/source/world-development-indicators", "China: GDP, electricity, exports", "various", "Annual", "", None, "", "", "PESTLE context", "Candidate - not verified", ""]),
        ("prop", ["S8", "Solar PV Global Supply Chains (special report)", "IEA", "", "(add link)", "China's share of each supply-chain stage", "%", "One-off", "", None, "", "", "Why this context matters", "Candidate - not verified", ""]),
+       ("prop", ["S9", "Global Energy Review 2026: Global trends; Technology: Solar PV and wind", "IEA", "", "https://www.iea.org/reports/global-energy-review-2026/global-trends", "Data centre electricity demand, solar PV additions, China additions", "%, GW, TWh", "Annual", "2025", "2026-11-24", "", "None", "Signals G1, G2", "Verified", "Claude"]),
+       ("prop", ["S10", "China's 15th Five-Year Plan article (gov.cn, 13 Mar 2026)", "State Council of the PRC", "", "https://english.www.gov.cn/news/202603/13/content_WS69b36980c6d00ca5f9a09d8a.html", "Plan period, low-carbon transformation, carbon reduction as macroeconomic target (work report)", "", "One-off", "2026-2030", "2026-11-24", "No numeric targets in the article", "None", "Signal G3, Brief", "Verified", "Claude"]),
        ], n=40, owner="Member A")
 
 # ---------------- Data checks ----------------
@@ -418,8 +420,8 @@ table("Uncertainties", "Critical uncertainties (scenario axes)",
       "Two uncertainties that matter most to the user and are genuinely unknown. Each scenario on the next sheet sits at one end of each axis. Back each axis with evidence.",
       [dict(h="ID", w=6), dict(h="Uncertainty", w=34), dict(h="One end", w=24), dict(h="Other end", w=24),
        dict(h="Why it is uncertain (evidence)", w=50), dict(h="Source IDs", w=12), dict(h="Status", w=11, list="Status")],
-      [("prop", ["U1", "Access to Western markets (US, EU, India)", "Open", "Closed", "", "", "Proposal"]),
-       ("prop", ["U2", "Supply discipline in China's PV industry", "Strong", "Weak", "", "", "Proposal"])],
+      [("prop", ["U1", "Access to Western markets (US tariffs, EU dependence on China)", "Open", "Closed", "Team text: US tariffs and EU de-risking (challenging) vs warmer EU-China ties (optimistic). Add sources.", "", "Proposal"]),
+       ("prop", ["U2", "Global demand for solar (energy security vs fossil rebound)", "Strong", "Weak", "Team text: wars, fuel prices, data centres, EV demand. Add sources.", "", "Proposal"])],
       n=4, owner="Member C")
 
 # ---------------- Scenarios ----------------
@@ -430,9 +432,9 @@ table("Scenarios", "Scenarios and slider defaults",
        dict(h="Export volume vs baseline (% per yr)", w=14, fmt="0.0"), dict(h="Export price (% per yr)", w=12, fmt="0.0"),
        dict(h="Margin change (pp)", w=11, fmt="0.0"),
        dict(h="Reasoning and evidence for the numbers", w=48), dict(h="Source IDs", w=11), dict(h="Status", w=11, list="Status")],
-      [("prop", ["A", "Price war behind walls", "Western markets keep raising barriers while Chinese capacity keeps growing. Surplus output is pushed into the remaining markets and prices keep falling.", "Closed", "Weak", -4, -8, -2.0, "Illustrative starting values. Replace with reasoning from sources.", "", "Proposal"]),
-       ("prop", ["B", "Managed consolidation", "Barriers stay, but Beijing and the industry cut capacity. Volumes shrink a little, prices recover and survivors rebuild margins.", "Closed", "Strong", -6, 6, 1.5, "Illustrative starting values. Replace with reasoning from sources.", "", "Proposal"]),
-       ("prop", ["C", "Open-door volume race", "Importing countries prioritise cheap deployment over protection and barriers soften, but capacity discipline fails. Volumes surge, prices fall further.", "Open", "Weak", 6, -10, -1.5, "Illustrative starting values. Replace with reasoning from sources.", "", "Proposal"]),
+      [("prop", ["A", "Base: current trends continue", "Demand for renewables keeps growing. China pursues carbon reduction, the EU continues electrification and the US returns to cutting emissions after the current administration. Steady technology progress. Note: 'base' means trends continue, not the most likely future.", None, None, 3, -4, 0, "Illustrative draft. Team to justify with sources.", "S9, S10", "Proposal"]),
+       ("prop", ["B", "Challenging: fossil comeback", "Renewable demand grows more slowly as data centres need steady power and fossil fuels cheapen if the wars in Iran and Ukraine end. The US imposes harsh tariffs, the EU cuts dependence on Chinese manufacturing and Beijing limits exports of cutting-edge panels. Little technology progress.", None, None, -8, -10, -3, "Illustrative draft. Team to justify with sources.", "S9", "Proposal"]),
+       ("prop", ["C", "Optimistic: energy-security boom", "China keeps or strengthens its lead in PV manufacturing. Continued wars keep fuel prices high, pushing Europe and Asia towards locally produced renewable power and electric cars. EU-China ties warm and dependence worries ease. Technology makes panels cheaper.", None, None, 8, -2, 1, "Illustrative draft. Team to justify with sources.", "S9", "Proposal"]),
        ], n=5, owner="Member C")
 
 # ---------------- Company inputs ----------------
@@ -457,7 +459,10 @@ table("Signals", "Signals (news that changes an assumption)",
        dict(h="Read status", w=14, list="ReadStatus"), dict(h="Owner", w=10), dict(h="Status", w=11, list="Status")],
       [("ex", ["EX-1", "[Exact headline]", "[Publisher]", "2026-11-20", "https://...", "Legal", "Reported news",
                "[Measure, rate and start date as the article states them]", "[Why this moves volume, price or margin in each scenario]",
-               -1, 0, 0, -0.5, 0, 0, 0, 0, 0, "Read", "Member B", "Draft"])],
+               -1, 0, 0, -0.5, 0, 0, 0, 0, 0, "Read", "Member B", "Draft"]),
+       ("prop", ["N1", "Data centre electricity demand rose 17% in 2025", "IEA", "2026", "https://www.iea.org/reports/global-energy-review-2026/global-trends", "Technological", "Reported news", "Electricity demand from data centres rose 17% in 2025 and made up around half of US electricity demand growth.", "Steady-power demand favours fossil and grid capacity over solar in the challenging future; small effect elsewhere.", 0, 0, 0, -1, 0, 0, 0, 0, 0, "Read", "Member B", "Proposal"]),
+       ("prop", ["N2", "Solar PV additions passed 600 GW in 2025; China added nearly 500 GW of renewables", "IEA", "2026", "https://www.iea.org/reports/global-energy-review-2026/technology-solar-pv-and-wind", "Economic", "Reported news", "Solar PV capacity additions rose about 12% in 2025, passing 600 GW; China added nearly 500 GW of renewable capacity, over 60% of global growth.", "Demand momentum is real, supporting volume in base and optimistic futures.", 1, 0, 0, 0, 0, 0, 1, 0, 0, "Read", "Member B", "Proposal"]),
+       ("prop", ["N3", "China makes carbon reduction a macroeconomic target", "gov.cn", "2026-03-13", "https://english.www.gov.cn/news/202603/13/content_WS69b36980c6d00ca5f9a09d8a.html", "Political", "Reported news", "The government work report made carbon reduction a macroeconomic target; the 15th Five-Year Plan (2026-2030) pledges low-carbon transformation.", "Supports domestic demand for the manufacturer in every future.", 0.5, 0, 0, 0.5, 0, 0, 0.5, 0, 0, "Read", "Member B", "Proposal"])],
       n=30, owner="Member B")
 
 # ---------------- Signposts ----------------

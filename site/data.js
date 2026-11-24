@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-23 15:08",
+  "built": "2026-11-24 14:19",
   "demo": true,
   "snapshot": null,
   "horizon": 12
@@ -205,6 +205,40 @@ window.BOARD = {
     "Used for": "Why this context matters",
     "Status": "Candidate - not verified",
     "Checked by": null
+   },
+   {
+    "ID": "S9",
+    "Name (exact table or article title)": "Global Energy Review 2026: Global trends; Technology: Solar PV and wind",
+    "Provider / publisher": "IEA",
+    "Dataset code / table": null,
+    "URL (table-level link)": "https://www.iea.org/reports/global-energy-review-2026/global-trends",
+    "Variables and filters": "Data centre electricity demand, solar PV additions, China additions",
+    "Unit": "%, GW, TWh",
+    "Frequency": "Annual",
+    "Coverage (from-to)": "2025",
+    "Access date": "2026-11-24",
+    "Missing values and flags": null,
+    "Transformations applied": "None",
+    "Used for": "Signals G1, G2",
+    "Status": "Verified",
+    "Checked by": "Claude"
+   },
+   {
+    "ID": "S10",
+    "Name (exact table or article title)": "China's 15th Five-Year Plan article (gov.cn, 13 Mar 2026)",
+    "Provider / publisher": "State Council of the PRC",
+    "Dataset code / table": null,
+    "URL (table-level link)": "https://english.www.gov.cn/news/202603/13/content_WS69b36980c6d00ca5f9a09d8a.html",
+    "Variables and filters": "Plan period, low-carbon transformation, carbon reduction as macroeconomic target (work report)",
+    "Unit": null,
+    "Frequency": "One-off",
+    "Coverage (from-to)": "2026-2030",
+    "Access date": "2026-11-24",
+    "Missing values and flags": "No numeric targets in the article",
+    "Transformations applied": "None",
+    "Used for": "Signal G3, Brief",
+    "Status": "Verified",
+    "Checked by": "Claude"
    }
   ],
   "checks": [],
@@ -413,19 +447,19 @@ window.BOARD = {
   "uncertainties": [
    {
     "ID": "U1",
-    "Uncertainty": "Access to Western markets (US, EU, India)",
+    "Uncertainty": "Access to Western markets (US tariffs, EU dependence on China)",
     "One end": "Open",
     "Other end": "Closed",
-    "Why it is uncertain (evidence)": null,
+    "Why it is uncertain (evidence)": "Team text: US tariffs and EU de-risking (challenging) vs warmer EU-China ties (optimistic). Add sources.",
     "Source IDs": null,
     "Status": "Proposal"
    },
    {
     "ID": "U2",
-    "Uncertainty": "Supply discipline in China's PV industry",
+    "Uncertainty": "Global demand for solar (energy security vs fossil rebound)",
     "One end": "Strong",
     "Other end": "Weak",
-    "Why it is uncertain (evidence)": null,
+    "Why it is uncertain (evidence)": "Team text: wars, fuel prices, data centres, EV demand. Add sources.",
     "Source IDs": null,
     "Status": "Proposal"
    }
@@ -433,41 +467,41 @@ window.BOARD = {
   "scenarios": [
    {
     "id": "A",
-    "name": "Price war behind walls",
-    "story": "Western markets keep raising barriers while Chinese capacity keeps growing. Surplus output is pushed into the remaining markets and prices keep falling.",
-    "u1": "Closed",
-    "u2": "Weak",
-    "d": -4.0,
-    "p": -8.0,
-    "m": -2.0,
-    "why": "Illustrative starting values. Replace with reasoning from sources.",
-    "src": "",
+    "name": "Base: current trends continue",
+    "story": "Demand for renewables keeps growing. China pursues carbon reduction, the EU continues electrification and the US returns to cutting emissions after the current administration. Steady technology progress. Note: 'base' means trends continue, not the most likely future.",
+    "u1": null,
+    "u2": null,
+    "d": 3.0,
+    "p": -4.0,
+    "m": 0.0,
+    "why": "Illustrative draft. Team to justify with sources.",
+    "src": "S9, S10",
     "status": "Proposal"
    },
    {
     "id": "B",
-    "name": "Managed consolidation",
-    "story": "Barriers stay, but Beijing and the industry cut capacity. Volumes shrink a little, prices recover and survivors rebuild margins.",
-    "u1": "Closed",
-    "u2": "Strong",
-    "d": -6.0,
-    "p": 6.0,
-    "m": 1.5,
-    "why": "Illustrative starting values. Replace with reasoning from sources.",
-    "src": "",
+    "name": "Challenging: fossil comeback",
+    "story": "Renewable demand grows more slowly as data centres need steady power and fossil fuels cheapen if the wars in Iran and Ukraine end. The US imposes harsh tariffs, the EU cuts dependence on Chinese manufacturing and Beijing limits exports of cutting-edge panels. Little technology progress.",
+    "u1": null,
+    "u2": null,
+    "d": -8.0,
+    "p": -10.0,
+    "m": -3.0,
+    "why": "Illustrative draft. Team to justify with sources.",
+    "src": "S9",
     "status": "Proposal"
    },
    {
     "id": "C",
-    "name": "Open-door volume race",
-    "story": "Importing countries prioritise cheap deployment over protection and barriers soften, but capacity discipline fails. Volumes surge, prices fall further.",
-    "u1": "Open",
-    "u2": "Weak",
-    "d": 6.0,
-    "p": -10.0,
-    "m": -1.5,
-    "why": "Illustrative starting values. Replace with reasoning from sources.",
-    "src": "",
+    "name": "Optimistic: energy-security boom",
+    "story": "China keeps or strengthens its lead in PV manufacturing. Continued wars keep fuel prices high, pushing Europe and Asia towards locally produced renewable power and electric cars. EU-China ties warm and dependence worries ease. Technology makes panels cheaper.",
+    "u1": null,
+    "u2": null,
+    "d": 8.0,
+    "p": -2.0,
+    "m": 1.0,
+    "why": "Illustrative draft. Team to justify with sources.",
+    "src": "S9",
     "status": "Proposal"
    }
   ],
@@ -500,7 +534,98 @@ window.BOARD = {
     "status": "Proposal"
    }
   },
-  "signals": [],
+  "signals": [
+   {
+    "id": "N1",
+    "title": "Data centre electricity demand rose 17% in 2025",
+    "publisher": "IEA",
+    "date": "2026",
+    "url": "https://www.iea.org/reports/global-energy-review-2026/global-trends",
+    "pestle": "Technological",
+    "kind": "Reported news",
+    "fact": "Electricity demand from data centres rose 17% in 2025 and made up around half of US electricity demand growth.",
+    "note": "Steady-power demand favours fossil and grid capacity over solar in the challenging future; small effect elsewhere.",
+    "read": "Read",
+    "eff": {
+     "A": {
+      "d": 0.0,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "B": {
+      "d": -1.0,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "C": {
+      "d": 0.0,
+      "p": 0.0,
+      "m": 0.0
+     }
+    },
+    "status": "Proposal"
+   },
+   {
+    "id": "N2",
+    "title": "Solar PV additions passed 600 GW in 2025; China added nearly 500 GW of renewables",
+    "publisher": "IEA",
+    "date": "2026",
+    "url": "https://www.iea.org/reports/global-energy-review-2026/technology-solar-pv-and-wind",
+    "pestle": "Economic",
+    "kind": "Reported news",
+    "fact": "Solar PV capacity additions rose about 12% in 2025, passing 600 GW; China added nearly 500 GW of renewable capacity, over 60% of global growth.",
+    "note": "Demand momentum is real, supporting volume in base and optimistic futures.",
+    "read": "Read",
+    "eff": {
+     "A": {
+      "d": 1.0,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "B": {
+      "d": 0.0,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "C": {
+      "d": 1.0,
+      "p": 0.0,
+      "m": 0.0
+     }
+    },
+    "status": "Proposal"
+   },
+   {
+    "id": "N3",
+    "title": "China makes carbon reduction a macroeconomic target",
+    "publisher": "gov.cn",
+    "date": "2026-03-13",
+    "url": "https://english.www.gov.cn/news/202603/13/content_WS69b36980c6d00ca5f9a09d8a.html",
+    "pestle": "Political",
+    "kind": "Reported news",
+    "fact": "The government work report made carbon reduction a macroeconomic target; the 15th Five-Year Plan (2026-2030) pledges low-carbon transformation.",
+    "note": "Supports domestic demand for the manufacturer in every future.",
+    "read": "Read",
+    "eff": {
+     "A": {
+      "d": 0.5,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "B": {
+      "d": 0.5,
+      "p": 0.0,
+      "m": 0.0
+     },
+     "C": {
+      "d": 0.5,
+      "p": 0.0,
+      "m": 0.0
+     }
+    },
+    "status": "Proposal"
+   }
+  ],
   "signposts": [
    {
     "ID": "G1",

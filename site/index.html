@@ -9,14 +9,14 @@
 :root{
   --bg:#f3f4f2;--panel:#fff;--ink:#1b2126;--muted:#5d6670;--line:#d9dde0;--soft:#eceeed;
   --accent:#b8560b;--accent-ink:#fff;--obs:#1b2126;--base:#0d6e8a;
-  --sA:#c0392b;--sB:#1f7a4d;--sC:#3559b5;
+  --sA:#3559b5;--sB:#c0392b;--sC:#1f7a4d;
   --good:#1f7a4d;--warn:#9a6400;--bad:#b3261e;--prop:#2f55c4;--demo-bg:#fde8e6;--demo:#9b1c13;
   --f:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;--mono:ui-monospace,Consolas,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#111518;--panel:#1a2025;--ink:#e6eaed;--muted:#9aa5ae;--line:#2d363d;--soft:#222a30;
   --accent:#f0913f;--accent-ink:#1a1006;--obs:#e6eaed;--base:#4fb6d6;
-  --sA:#ff8a7a;--sB:#5fd39a;--sC:#8fa9ff;--good:#5fd39a;--warn:#f0c060;--bad:#ff8a80;--prop:#8fa9ff;--demo-bg:#3b1512;--demo:#ffb4ab;color-scheme:dark}}
+  --sA:#8fa9ff;--sB:#ff8a7a;--sC:#5fd39a;--good:#5fd39a;--warn:#f0c060;--bad:#ff8a80;--prop:#8fa9ff;--demo-bg:#3b1512;--demo:#ffb4ab;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--f)}
 .wrap{max-width:1260px;margin:0 auto;padding:0 16px 48px}
@@ -121,7 +121,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const f1=x=>x==null||isNaN(x)?'–':(Math.round(x*10)/10).toFixed(1);
 const f2=x=>x==null||isNaN(x)?'–':x.toFixed(2);
 const fv=(x,u)=>x==null?'–':(Math.abs(x)<1?x.toFixed(3):Math.abs(x)<100?x.toFixed(2):x.toFixed(1));
-const sgn=x=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(1);
+const sgn=(x,d=1)=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(d);
 const H = (B.meta && B.meta.horizon) || 12;
 const empty=(t)=>`<div class="empty">${t}</div>`;
 const statusChip=st=>!st?'':/proposal/i.test(st)?'<span class="chip prop">proposal</span>':/verified|used/i.test(st)?'<span class="chip ok">'+esc(st)+'</span>':/draft/i.test(st)?'<span class="chip ass">draft</span>':'<span class="chip">'+esc(st)+'</span>';
@@ -221,7 +221,7 @@ function renderScenarios(){if(!SCEN.length){$('t-scenarios').innerHTML=empty('No
   else lines.push({pts:[[shown-1,start],[shown+H-1,start]],css:'--muted',dash:'2 3',w:1});
   SCEN.forEach(sc=>{const css=SCSS[sc.id]||'--muted';
     if(S.showBase&&(C.signals||[]).length)lines.push({pts:[[shown-1,start]].concat(runScen(sc.id,false).map((o,i)=>[shown+i,val(o)])),css,dash:'1 4',w:1.4});
-    lines.push({pts:[[shown-1,start]].concat(runScen(sc.id).map((o,i)=>[shown+i,val(o)])),css,w:2.4,name:'Scenario '+sc.id,end:true})});
+    lines.push({pts:[[shown-1,start]].concat(runScen(sc.id).map((o,i)=>[shown+i,val(o)])),css,w:2.4,name:sc.name,end:true})});
   const unit={vol:`Market export volume (${s.unit})`,rev:"Company revenue index (today = 100)",ebit:"Operating profit per 100 of today's revenue"}[S.metric];
   const rows=SCEN.map(sc=>{const o=runScen(sc.id)[H-1],o0=runScen(sc.id,false)[H-1];return {sc,o,o0}});
   const pos={};SCEN.forEach(sc=>{const k=(sc.u1||'?')+'|'+(sc.u2||'?');(pos[k]=pos[k]||[]).push(sc)});
@@ -237,14 +237,14 @@ function renderScenarios(){if(!SCEN.length){$('t-scenarios').innerHTML=empty('No
    <div class="panel"><div class="ctl" style="justify-content:space-between"><div class="seg" role="group" aria-label="Measure">${[['vol','Market volume'],['rev','Company revenue'],['ebit','Company profit']].map(([k,l])=>`<button data-metric="${k}" aria-pressed="${S.metric===k}">${l}</button>`).join('')}</div>
      ${(C.signals||[]).length?`<label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="c-base" ${S.showBase?'checked':''}> Show paths without signals (dotted)</label>`:''}</div>
     <h3 style="margin-bottom:6px">${esc(unit)} <span class="chip ass">scenario output</span></h3><div id="chart-s"></div>
-    <div class="legend">${S.metric==='vol'?'<span><i style="border-color:var(--obs)"></i>Observed</span><span><i style="border-color:var(--base);border-top-style:dashed"></i>Baseline forecast</span>':''}${SCEN.map(sc=>`<span><i style="border-color:var(${SCSS[sc.id]})"></i>Scenario ${esc(sc.id)}</span>`).join('')}</div></div>
+    <div class="legend">${S.metric==='vol'?'<span><i style="border-color:var(--obs)"></i>Observed</span><span><i style="border-color:var(--base);border-top-style:dashed"></i>Baseline forecast</span>':''}${SCEN.map(sc=>`<span><i style="border-color:var(${SCSS[sc.id]})"></i>${esc(sc.name)}</span>`).join('')}</div></div>
    <div class="panel"><h3>Outcomes in ${H} months <span class="chip ass">scenario output</span></h3>
-    ${tableHTML([{h:'Scenario',f:r=>`<b style="color:var(${SCSS[r.sc.id]})">${esc(r.sc.id)}</b> ${esc(r.sc.name)}`},{h:'Market volume',n:1,f:r=>fv(r.o.V)},{h:'Price idx',n:1,f:r=>f1(r.o.P)},{h:'Revenue idx',n:1,f:r=>f1(r.o.R)},{h:'Margin %',n:1,f:r=>f1(r.o.mg)},{h:'Profit per 100',n:1,f:r=>f2(r.o.E)},{h:'Signals effect',n:1,f:r=>sgn(r.o.E-r.o0.E)}],rows)}
+    ${tableHTML([{h:'Scenario',f:r=>`<b style="color:var(${SCSS[r.sc.id]})">${esc(r.sc.id)}</b> ${esc(r.sc.name)}`},{h:'Market volume',n:1,f:r=>fv(r.o.V)},{h:'Price idx',n:1,f:r=>f1(r.o.P)},{h:'Revenue idx',n:1,f:r=>f1(r.o.R)},{h:'Margin %',n:1,f:r=>f1(r.o.mg)},{h:'Profit per 100',n:1,f:r=>f2(r.o.E)},{h:'Signals effect',n:1,f:r=>sgn(r.o.E-r.o0.E,2)}],rows)}
     <p class="small" style="margin-top:8px">Consequences of the assumptions, not predictions. No probabilities. Company figures are illustrative.</p>
     <details><summary class="small" style="cursor:pointer">Show the maths</summary><p class="small" style="margin-top:6px">Market volume = baseline × (1 + volume assumption × t/12). Company export volume index = 100 × (market volume ÷ volume today)^sensitivity. Price index = 100 × (1 + price assumption × t/12). Revenue index = export share × volume index × price index ÷ 100 + (1 − export share) × price index. Margin = starting margin + margin change × t/12. Profit per 100 of today's revenue = revenue index × margin ÷ 100.</p></details></div></div>
    <div class="grid"><div class="panel"><h3>Critical uncertainties</h3>
-    <div class="matrix" style="margin-top:10px"><div class="ax v">${esc(g1)}</div>${cell(e1,g1)}${cell(e2,g1)}<div class="ax v">${esc(g2)}</div>${cell(e1,g2)}${cell(e2,g2)}<div></div><div class="ax">${esc(e1)}</div><div class="ax">${esc(e2)}</div></div>
-    <p class="small" style="margin-top:6px">Horizontal: ${esc(u1['Uncertainty']||'U1')}. Vertical: ${esc(u2['Uncertainty']||'U2')}. ${statusChip(u1.Status)}</p></div>
+    ${SCEN.every(x=>!x.u1&&!x.u2)?`<ul style="margin:8px 0 0;padding-left:18px">${U.map(u=>`<li><b>${esc(u['Uncertainty'])}</b>: ${esc(u['One end'])} or ${esc(u['Other end'])}. <span class="small">${esc(u['Why it is uncertain (evidence)']||'')}</span> ${statusChip(u.Status)}</li>`).join('')}</ul>`:`<div class="matrix" style="margin-top:10px"><div class="ax v">${esc(g1)}</div>${cell(e1,g1)}${cell(e2,g1)}<div class="ax v">${esc(g2)}</div>${cell(e1,g2)}${cell(e2,g2)}<div></div><div class="ax">${esc(e1)}</div><div class="ax">${esc(e2)}</div></div>
+    <p class="small" style="margin-top:6px">Horizontal: ${esc(u1['Uncertainty']||'U1')}. Vertical: ${esc(u2['Uncertainty']||'U2')}. ${statusChip(u1.Status)}</p>`}</div>
     <div class="panel"><h3>Scenario assumptions you can change</h3><p class="small">Drag, then release to recompute. Values come from the team's Scenarios sheet; changes stay in this browser.</p>${sliders}
      <div class="sc" style="border-color:var(--line)"><h3>Company inputs <span class="chip ass">illustrative</span></h3>${cs('m0',ci.m0)}${cs('share',ci.share)}${cs('beta',ci.beta)}<p class="small">Not real company data.</p></div></div></div></div>`;
   chart($('chart-s'),{x,lines,split:shown-1,aria:unit+' by scenario'});
@@ -273,7 +273,7 @@ function renderSignals(){const G=C.signals||[];
   const imp=G.map(g=>({g,c:SCEN.map(sc=>S.sigOn[g.id]?runScen(sc.id)[H-1].E-runScen(sc.id,true,g.id)[H-1].E:null)}));
   $('t-signals').innerHTML=`<div class="main grid"><div class="grid" style="min-width:0"><div><h2>Signals feed</h2><p class="small" style="margin-top:4px">News from pages the team read. Each item keeps the stated fact apart from our judgement, which is turned into numbers that shift the scenario assumptions.</p></div>
    ${cards||empty('No signals yet. Member B adds news items in the Signals sheet; each appears here as a card that can be switched on and off.')}</div>
-   <div class="panel"><h3>Impact of each signal</h3>${tableHTML([{h:'Signal',f:r=>esc(r.g.title.slice(0,60))},...SCEN.map((sc,i)=>({h:'Profit · '+sc.id,n:1,f:r=>r.c[i]==null?'off':sgn(r.c[i]*1)}))],imp,{empty:'Appears when signals exist.'})}
+   <div class="panel"><h3>Impact of each signal</h3>${tableHTML([{h:'Signal',f:r=>esc(r.g.title.slice(0,60))},...SCEN.map((sc,i)=>({h:'Profit · '+sc.id,n:1,f:r=>r.c[i]==null?'off':sgn(r.c[i],2)}))],imp,{empty:'Appears when signals exist.'})}
    <p class="small" style="margin-top:6px">Change in month-${H} operating profit per 100 of today's revenue when the signal is on, others unchanged.</p></div></div>`;
   document.querySelectorAll('[data-on]').forEach(e=>e.onchange=()=>{S.sigOn[e.dataset.on]=e.checked;commit()})}
 
