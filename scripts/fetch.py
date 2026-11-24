@@ -68,6 +68,8 @@ def fetch_comtrade_exports() -> list[dict]:
             rows += r.json().get("data") or []
             break
         time.sleep(3.2)
+    if len({str(d.get("period")) for d in rows}) < 24:
+        raise RuntimeError(f"only {len(rows)} rows returned")
     return write_comtrade(rows)
 
 
@@ -132,14 +134,17 @@ def main():
         return
     catalog = []
     for fn in (fetch_comtrade_exports, fetch_eurostat_comext, fetch_nbs_solar_cells):
-        catalog += fn()
+        try:
+            catalog += fn()
+        except Exception as e:  # network blocked, API change: keep the committed snapshot
+            print(f"{fn.__name__} failed ({e}); keeping existing snapshot")
     if catalog:
         for c in catalog:
             c.setdefault("accessed", TODAY)
         (PROC / "catalog.json").write_text(json.dumps(catalog, indent=1), encoding="utf-8")
         print(f"catalog: {len(catalog)} series")
     else:
-        print("no series fetched; build.py will stay in demo mode")
+        print("no series fetched; existing data/processed snapshot is kept")
 
 
 if __name__ == "__main__":
