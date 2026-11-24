@@ -18,8 +18,14 @@ assumed must be visibly distinct. LLM-generated numbers are never evidence.
   (cells) and 854143 (modules), UN Comtrade, monthly, volume with value alongside. HS 2022 split means
   clean series from 2022. Second series: NBS monthly solar cell output.
 - Horizons: forecast 12 months; scenarios to 2030 (15th Five-Year Plan).
-- Scenario axes: U1 Western market access (Open/Closed) × U2 China supply discipline (Strong/Weak).
-  A Price war behind walls (Closed/Weak), B Managed consolidation (Closed/Strong), C Open-door volume race (Open/Weak).
+- Scenarios (team's choice, 24.11): A Base: current trends continue (note: not "most likely"),
+  B Challenging: fossil comeback, C Optimistic: energy-security boom. Uncertainties shown as a list:
+  Western market access, global demand for solar. Slider numbers are illustrative drafts until the team justifies them.
+- Data (24.11): Comtrade free preview endpoint works without a key (1 period per call, ~1 call/3 s).
+  China monthly exports 854142+854143 available from 2022; January missing (China reports Jan+Feb
+  combined) -> build.py interpolates, flag 'i'. CI/VM shells can't reach Comtrade from here; data was
+  captured via the desktop browser into data/raw/comtrade/<date>.json and processed with
+  `python scripts/fetch.py --from-raw <file>`.
 - Architecture: static page + GitHub Action (monthly cron + on push) → GitHub Pages. Zip backup for submission.
 - Team edits Excel on UTU SharePoint (no API access); Raul downloads it to content/team.xlsx and pushes.
 
@@ -46,9 +52,8 @@ site/{index.html,data.js}  .github/workflows/build.yml  README.md  LOG.md  docs/
 - `index.html` is dependency-free; works from file:// because data is a JS file, not fetched JSON.
 
 ## Next steps (in order)
-1. Push repo to GitHub, enable Pages (source: GitHub Actions), add `COMTRADE_KEY` secret.
-2. Implement `fetch_comtrade_exports` (world total + EU27/US/India/rest) → catalog.json. Verify a few
-   values by hand against the Comtrade UI; team logs them in Data checks.
+1. Push repo to GitHub, enable Pages (source: GitHub Actions). COMTRADE_KEY optional.
+2. Team verifies a few Comtrade values by hand in the Comtrade UI (Data checks sheet). Partner split (EU/US/India) optional.
 3. Wire signposts to series (add a `series`/`calc` column or a mapping in build.py) so readings and
    tripped state show.
 4. Add second series (NBS or Eurostat) once the team verifies the source.

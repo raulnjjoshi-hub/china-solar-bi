@@ -127,6 +127,8 @@ const empty=(t)=>`<div class="empty">${t}</div>`;
 const statusChip=st=>!st?'':/proposal/i.test(st)?'<span class="chip prop">proposal</span>':/verified|used/i.test(st)?'<span class="chip ok">'+esc(st)+'</span>':/draft/i.test(st)?'<span class="chip ass">draft</span>':'<span class="chip">'+esc(st)+'</span>';
 function tableHTML(cols,rows,opt={}){if(!rows.length)return empty(opt.empty||'Nothing here yet.');
   return `<div class="tablewrap"><table><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c.n?'n':''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function staleNote(s){if(B.meta.demo||!B.meta.snapshot)return '';const last=s.time[s.time.length-1],[ly,lm]=last.split('-').map(Number),[sy,sm]=B.meta.snapshot.split('-').map(Number),gap=(sy-ly)*12+(sm-lm);
+  return gap>6?`<div class="banner"><b>Data ends ${esc(last)}, ${gap} months before this snapshot.</b> UN Comtrade has not yet published China's monthly figures after ${esc(last)}; only annual totals exist for later years. The forecast therefore covers a period that has passed, and is checked against the published annual total on the Market and forecast tab.</div>`:''}
 function ser(){return B.series.find(s=>s.id===S.series)||B.series[0]}
 function method(s){const m=S.method&&s.fc.methods[S.method]?S.method:s.fc.default;return m}
 
@@ -171,7 +173,7 @@ function header(){const b=C.brief||{};$('h-sub').textContent=`${b['Group']||'Gro
 function renderOverview(){const b=C.brief||{},s=ser(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk];
   const ch12=n>12?(s.val[n-1]/s.val[n-13]-1)*100:null;const out=SCEN.map(x=>({x,o:runScen(x.id)[H-1]}));
   const field=(k)=>`<tr><td style="width:180px"><b>${esc(k)}</b></td><td>${esc(b[k]||'—')}</td></tr>`;
-  $('t-overview').innerHTML=`<div class="grid">
+  $('t-overview').innerHTML=`${staleNote(s)}<div class="grid">
   <div class="grid kpis">
    <div class="panel kpi"><div class="l">${esc(s.label)} <span class="chip obs">observed</span></div><div class="v">${fv(s.val[n-1])}</div><div class="n">${esc(s.unit)}, ${esc(s.time[n-1])}, ${sgn(ch12)}% on a year ago</div></div>
    <div class="panel kpi"><div class="l">Baseline in ${H} months <span class="chip mod">modelled</span></div><div class="v">${fv(fc.ahead[H-1])}</div><div class="n">${esc(fc.label)}, indicative range ${fv(fc.lo[H-1])} to ${fv(fc.hi[H-1])}</div></div>
@@ -195,7 +197,7 @@ function renderMarket(){const s=ser(),n=s.val.length,mk=method(s),fc=s.fc.method
     {pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),css:'--accent',dash:'2 3',w:1.6,name:'Holdout test forecast'}];
   const band={lo:[[shown-1,s.val[n-1]]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,s.val[n-1]]].concat(fc.hi.map((v,i)=>[shown+i,v]))};
   const mrows=Object.entries(s.fc.methods).map(([k,v])=>({k,...v}));const best=mrows.slice().sort((a,b)=>a.mape-b.mape)[0];
-  $('t-market').innerHTML=`<div class="main grid"><div class="grid" style="min-width:0">
+  $('t-market').innerHTML=`${staleNote(s)}<div class="main grid"><div class="grid" style="min-width:0">
    <div class="panel"><div class="ctl">
      <label>Series<select id="c-series">${B.series.map(x=>`<option value="${esc(x.id)}" ${x.id===s.id?'selected':''}>${esc(x.label)}</option>`).join('')}</select></label>
      <label>Forecast method<select id="c-method">${mrows.map(m=>`<option value="${m.k}" ${m.k===mk?'selected':''}>${esc(m.label)}</option>`).join('')}</select></label></div>
@@ -203,11 +205,15 @@ function renderMarket(){const s=ser(),n=s.val.length,mk=method(s),fc=s.fc.method
     <div id="chart-m"></div>
     <div class="legend"><span><i style="border-color:var(--obs)"></i>Observed (${esc(s.source_id)})</span><span><i style="border-color:var(--base);border-top-style:dashed"></i>Forecast, ${esc(fc.label)}</span><span><i style="border-color:var(--accent);border-top-style:dotted"></i>What the method predicted for the hidden holdout months</span><span>Shaded: indicative 80% range from holdout error, not a statistical interval</span></div>
     <div class="two" style="margin-top:14px"><div><h3>What it is</h3><p class="small" style="color:var(--ink)">${esc(s.label)}, ${esc(s.frequency||'monthly')}, in ${esc(s.unit)}. Source ${esc(s.source_id)}: see the Sources tab for the exact table, coverage and gaps.</p></div>
-     <div><h3>How to read it</h3><p class="small" style="color:var(--ink)">Latest ${fv(s.val[n-1])} (${esc(s.time[n-1])}). The method forecasts ${fv(fc.ahead[H-1])} in ${H} months. On the last ${s.fc.holdout} months, hidden from the model, it was off by ${f1(fc.mape)}% on average.</p></div></div></div></div>
+     <div><h3>How to read it</h3><p class="small" style="color:var(--ink)">Latest ${fv(s.val[n-1])} (${esc(s.time[n-1])}).${s.flag.includes('i')?' Months marked i were interpolated.':''} The method forecasts ${fv(fc.ahead[H-1])} in ${H} months. On the last ${s.fc.holdout} months, hidden from the model, it was off by ${f1(fc.mape)}% on average.</p></div></div></div></div>
    <div class="grid"><div class="panel"><h3>Holdout test <span class="chip mod">modelled</span></h3>
     <p class="small">Each method is fitted without the last ${s.fc.holdout} months (from ${esc(s.fc.holdoutStart)}), forecasts them, and is scored against what happened. A method is only worth using if it beats the seasonal naive benchmark.</p>
     ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===best.k?' <span class="chip ok">lowest error</span>':'')+(r.k===mk?' <span class="chip mod">in use</span>':'')},{h:'MAPE %',n:1,f:r=>f2(r.mape)},{h:'RMSE',n:1,f:r=>fv(r.rmse)}],mrows)}
     <p class="small" style="margin-top:8px">The team recomputes these in Excel (Forecast sheet) as an independent check.</p></div>
+    ${s.annualCheck?`<div class="panel"><h3>Check against what happened in ${esc(s.annualCheck.year)} <span class="chip obs">observed</span></h3>
+    <p class="small">The monthly data ends ${esc(s.time[n-1])}. Comtrade has since published China's ${esc(s.annualCheck.year)} annual total: <b>${fv(s.annualCheck.actual)} ${esc(s.unit)}</b>. Each method's 12-month forecast, summed, against that total:</p>
+    ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===mk?' <span class="chip mod">in use</span>':'')},{h:'Forecast total',n:1,f:r=>fv(r.forecast)},{h:'Error',n:1,f:r=>sgn(r.error*100)+'%'}],Object.entries(s.annualCheck.methods).map(([k,v])=>({k,...v})))}
+    <p class="small" style="margin-top:6px">Source: ${esc(s.annualCheck.source)}</p></div>`:''}
     <div class="panel"><h3>Forecast target options</h3>${C.targetDecision?`<p>Team decision: <b>${esc(C.targetDecision)}</b>. ${esc(C.targetReason||'')}</p>`:empty('Team has not picked the target yet (Forecast target sheet).')}
     ${tableHTML([{h:'ID',k:'ID'},{h:'Indicator',k:'Indicator'},{h:'Frequency',k:'Frequency / unit'}],C.targets||[])}</div></div></div>`;
   const spec={x,lines,band,split:shown-1,aria:s.label+' observed and forecast'};chart($('chart-m'),spec);

@@ -162,8 +162,32 @@ def read_series_real() -> list[dict] | None:
                 time.append(row["period"][:7])
                 val.append(float(row["value"]))
                 flag.append(row.get("flag") or "")
+        time, val, flag = fill_gaps(time, val, flag)
         out.append({**meta, "time": time, "val": val, "flag": flag})
     return out
+
+
+def fill_gaps(time, val, flag):
+    """Insert missing months between first and last observation by linear interpolation (flag 'i').
+    Needed because China publishes January and February combined, so January is missing in Comtrade."""
+    if not time:
+        return time, val, flag
+    have = dict(zip(time, zip(val, flag)))
+    t, v, f = [], [], []
+    p = time[0]
+    while p <= time[-1]:
+        t.append(p)
+        if p in have:
+            v.append(have[p][0]); f.append(have[p][1])
+        else:
+            v.append(None); f.append("i")
+        p = add_months(p, 1)
+    for i, x in enumerate(v):
+        if x is None:
+            lo = max(j for j in range(i) if v[j] is not None)
+            hi = min(j for j in range(i + 1, len(v)) if v[j] is not None)
+            v[i] = v[lo] + (v[hi] - v[lo]) * (i - lo) / (hi - lo)
+    return t, v, f
 
 
 def add_months(p: str, k: int) -> str:
@@ -265,6 +289,26 @@ def forecast_series(s: dict) -> dict:
             "aheadTime": [add_months(s["time"][-1], k) for k in range(1, HORIZON + 1)]}
 
 
+def add_annual_check(series):
+    """Out-of-sample check: compare each method's 12-month forecast total with the annual total
+    published later (data/raw/comtrade/annual_*.json). Only for flow series (kg, usd)."""
+    files = sorted((ROOT / "data" / "raw" / "comtrade").glob("annual_*.json"))
+    if not files:
+        return
+    a = json.loads(files[-1].read_text(encoding="utf-8"))
+    for s in series:
+        key, scale = {"cn_pv_exports_kg": ("kg", 1e6), "cn_pv_exports_usd": ("usd", 1e9)}.get(s["id"], (None, 0))
+        if not key:
+            continue
+        year = s["fc"]["aheadTime"][0][:4]
+        if not all(year in a[c] for c in ("854142", "854143")) or s["fc"]["aheadTime"][-1][:4] != year:
+            continue
+        actual = sum(a[c][year][key] for c in ("854142", "854143")) / scale
+        s["annualCheck"] = {"year": year, "actual": actual, "source": a.get("source", ""),
+                            "methods": {k: {"label": m["label"], "forecast": sum(m["ahead"]),
+                                            "error": sum(m["ahead"]) / actual - 1} for k, m in s["fc"]["methods"].items()}}
+
+
 # ----------------------------------------------------------------- main
 def main():
     force_demo = "--demo" in sys.argv
@@ -274,6 +318,8 @@ def main():
         series = demo_series()
     for s in series:
         s["fc"] = forecast_series(s)
+    if not demo:
+        add_annual_check(series)
     board = {
         "meta": {"built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "demo": demo,
                  "snapshot": None if demo else json.loads((PROC / "catalog.json").read_text(encoding="utf-8"))[0].get("accessed"),

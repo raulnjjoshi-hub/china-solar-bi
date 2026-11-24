@@ -1,0 +1,32 @@
+[
+ {
+  "id": "cn_pv_exports_kg",
+  "label": "China PV cell + module exports, net weight",
+  "unit": "thousand tonnes",
+  "source_id": "S1",
+  "frequency": "Monthly",
+  "file": "cn_pv_exports_kg.csv",
+  "accessed": "2026-11-24",
+  "note": "UN Comtrade, reporter China (156), partner World (0), flow X, HS 854142+854143"
+ },
+ {
+  "id": "cn_pv_exports_usd",
+  "label": "China PV cell + module exports, value",
+  "unit": "USD billion",
+  "source_id": "S1",
+  "frequency": "Monthly",
+  "file": "cn_pv_exports_usd.csv",
+  "accessed": "2026-11-24",
+  "note": "UN Comtrade, reporter China (156), partner World (0), flow X, HS 854142+854143"
+ },
+ {
+  "id": "cn_pv_export_unit_value",
+  "label": "China PV cell + module exports, unit value (value / weight)",
+  "unit": "USD per kg",
+  "source_id": "S1",
+  "frequency": "Monthly",
+  "file": "cn_pv_export_unit_value.csv",
+  "accessed": "2026-11-24",
+  "note": "UN Comtrade, reporter China (156), partner World (0), flow X, HS 854142+854143"
+ }
+]
