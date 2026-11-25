@@ -173,6 +173,35 @@ td .sub{display:block;font-size:var(--fs-small);color:var(--ink-3);margin-top:2p
 button.link{background:none;border:1px solid var(--line);color:var(--ink);font:500 var(--fs-small) var(--font);padding:7px 14px;border-radius:var(--radius-s);cursor:pointer}
 button.link:hover{border-color:var(--ink-3)}
 details.more summary{cursor:pointer;color:var(--ink-2);font-size:var(--fs-small);font-weight:500}
+/* ---- v2 layout additions ---- */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.strip .k{font-size:var(--fs-micro);font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.strip .v{font-size:var(--fs-body);color:var(--ink)}
+@media(max-width:800px){.strip{grid-template-columns:1fr}}
+.bottomline p{font-size:15px;line-height:1.65;max-width:none;margin-bottom:12px;color:var(--ink)}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+@media(max-width:800px){.cols3{grid-template-columns:1fr}}
+.col-h{display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:8px}
+.col-h .n{font-size:var(--fs-small);color:var(--ink-3);font-weight:400}
+.plain-list{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:13.5px}
+.plain-list li{padding-left:14px;position:relative}
+.plain-list li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;border-radius:50%;background:var(--ink-3)}
+.plain-list .sub{display:block;font-size:var(--fs-small);color:var(--ink-3)}
+.scen-card details.adj{border-top:1px solid var(--line-soft);margin-top:var(--sp-2);padding-top:12px}
+.scen-card details.adj summary{cursor:pointer;font-size:var(--fs-small);font-weight:500;color:var(--ink-2);list-style:none}
+.scen-card details.adj summary::-webkit-details-marker{display:none}
+.scen-card details.adj summary::before{content:"▸ ";color:var(--ink-3)} .scen-card details.adj[open] summary::before{content:"▾ "}
+.scen-card .srow{grid-template-columns:minmax(0,1fr) 96px 40px}
+.news{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px var(--sp-2);align-items:start;padding:var(--sp-2) 0;border-top:1px solid var(--line-soft)}
+.news:first-of-type{border-top:0;padding-top:4px}
+.news .title{font-weight:500}
+.news .eff{display:flex;gap:10px;font-size:var(--fs-small);white-space:nowrap}
+.news .eff span{color:var(--ink-3)} .news .eff b{font-weight:500;color:var(--ink)}
+@media(max-width:800px){.news{grid-template-columns:auto minmax(0,1fr)}.news .eff{grid-column:2}}
+.subnav{display:flex;gap:var(--sp-2);flex-wrap:wrap;font-size:var(--fs-small);margin:-8px 0 var(--sp-3)}
+.subnav a{color:var(--ink-2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;background:var(--surface)}
+.subnav a:hover{border-color:var(--ink-3);color:var(--ink)}
+.anchor{scroll-margin-top:64px}
 </style>
 </head>
 <body>
@@ -188,26 +217,22 @@ details.more summary{cursor:pointer;color:var(--ink-2);font-size:var(--fs-small)
 <nav class="tabs" role="tablist" aria-label="Board sections" id="tabs"></nav>
 <div id="demo"></div>
 <section class="tab" id="t-overview"></section>
-<section class="tab" id="t-market"></section>
-<section class="tab" id="t-scenarios"></section>
-<section class="tab" id="t-options"></section>
-<section class="tab" id="t-signals"></section>
-<section class="tab" id="t-frameworks"></section>
-<section class="tab" id="t-sources"></section>
-<section class="tab" id="t-method"></section>
-<section class="tab" id="t-readme"></section>
+<section class="tab" id="t-outlook"></section>
+<section class="tab" id="t-strategy"></section>
+<section class="tab" id="t-context"></section>
+<section class="tab" id="t-evidence"></section>
 </div>
 <script src="data.js"></script>
 <script>
 "use strict";
-/* ================= data + state (logic unchanged) ================= */
+/* ================= data + state ================= */
 const B = window.BOARD || {meta:{demo:true},content:{},series:[]};
 const C = B.content;
 const SCEN = (C.scenarios||[]);
-const TABS = [['overview','Overview'],['market','Market and forecast'],['scenarios','Scenarios'],['options','Options and signposts'],
-  ['signals','Signals'],['frameworks','PESTLE and Diamond'],['sources','Sources'],['method','Method and log'],['readme','README']];
-const KEY = 'g7-solar-board-v1';
-function fresh(){return {tab:'overview',series:(B.series[0]||{}).id,method:null,metric:'vol',showBase:true,
+const TABS = [['overview','Overview'],['outlook','Outlook'],['strategy','Strategy'],['context','Context'],['evidence','Evidence and method']];
+const ALIAS = {market:'evidence',scenarios:'outlook',signals:'outlook',options:'strategy',frameworks:'context',sources:'evidence',method:'evidence',readme:'evidence'};
+const KEY = 'g7-solar-board-v2';
+function fresh(){return {tab:'overview',evSeries:(B.series[0]||{}).id,method:null,metric:'vol',open:{},
   params:Object.fromEntries(SCEN.map(s=>[s.id,{d:s.d,p:s.p,m:s.m}])),
   m0:C.company?C.company.m0.value:3,share:C.company?C.company.share.value:50,beta:C.company?C.company.beta.value:1,
   sigOn:Object.fromEntries((C.signals||[]).map(s=>[s.id,true])),
@@ -218,14 +243,10 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify({built:B.meta.built,
 const H = (B.meta && B.meta.horizon) || 12;
 
 /* ================= shared theme ================= */
-// Scenario colour by meaning (base / challenging / optimistic), falling back to position.
 function scKind(sc,i){const n=(sc.name||'').toLowerCase();return /base/.test(n)?'base':/challeng|pessim|downside/.test(n)?'chal':/optim|upside/.test(n)?'opt':['base','chal','opt'][i%3]}
-const THEME={
-  obs:'var(--ink)', fc:'var(--accent)', band:'var(--accent)', grid:'var(--line-soft)', axis:'var(--line)', muted:'var(--ink-3)',
-  scen:{base:'var(--sc-base)',chal:'var(--sc-chal)',opt:'var(--sc-opt)'},
-  scenInk:{base:'var(--sc-base)',chal:'var(--sc-chal)',opt:'var(--sc-opt-ink)'},
-  height:w=>w<600?240:300
-};
+const THEME={obs:'var(--ink)',fc:'var(--accent)',band:'var(--accent)',grid:'var(--line-soft)',axis:'var(--line)',muted:'var(--ink-3)',
+  scen:{base:'var(--sc-base)',chal:'var(--sc-chal)',opt:'var(--sc-opt)'},scenInk:{base:'var(--sc-base)',chal:'var(--sc-chal)',opt:'var(--sc-opt-ink)'},
+  height:w=>w<600?240:300};
 SCEN.forEach((s,i)=>{s.kind=scKind(s,i);s.color=THEME.scen[s.kind];s.ink=THEME.scenInk[s.kind];s.short=(s.name||s.id).split(':')[0].trim()});
 
 /* ================= formatting helpers ================= */
@@ -235,10 +256,8 @@ const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','De
 const fmtMonth=p=>{if(!p)return '';const [y,m]=p.split('-');return MON[+m-1]+' '+y};
 const fmtDate=d=>{if(!d)return '';const [y,m,dd]=String(d).slice(0,10).split('-');return dd?(+dd)+' '+MON[+m-1]+' '+y:String(d)};
 function shortUnit(u){u=u||'';return u.replace(/thousand tonnes/i,'kt').replace(/USD billion/i,'bn USD').replace(/USD per kg/i,'USD/kg')}
-function fmt(v,dp){if(v==null||isNaN(v))return '–';const a=Math.abs(v);
-  if(dp==null)dp=a<1?3:a<100?2:1;return v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp})}
-const fv=v=>fmt(v);
-const f1=x=>fmt(x,1), f2=x=>fmt(x,2);
+function fmt(v,dp){if(v==null||isNaN(v))return '–';const a=Math.abs(v);if(dp==null)dp=a<1?3:a<100?2:1;return v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp})}
+const fv=v=>fmt(v), f1=x=>fmt(x,1), f2=x=>fmt(x,2);
 const sgn=(x,d=1)=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(d);
 const pct=x=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(1)+'%';
 function deltaHTML(ch,vs){if(ch==null||isNaN(ch))return '';const c=ch>0.05?'up':ch<-0.05?'down':'flat',a=c==='up'?'▲':c==='down'?'▼':'■';
@@ -254,17 +273,20 @@ function tableHTML(cols,rows,opt={}){if(!rows.length)return empty(opt.empty||'No
   const live=opt.hideEmpty?cols.filter(c=>c.keep||rows.some(r=>{const v=c.f?c.f(r):r[c.k];return v!=null&&String(v).replace(/<[^>]*>/g,'').trim()!==''})):cols;
   return `<div class="tablewrap"><table><thead><tr>${live.map(c=>`<th class="${c.n?'n':''}" ${c.w?`style="width:${c.w}"`:''}>${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${live.map(c=>`<td class="${c.n?'n':''}">${c.f?c.f(r):esc(r[c.k]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
 const rowStatus=(r,showEach)=>showEach?' '+statusTag(r.Status||r.status):'';
-function ser(){return B.series.find(s=>s.id===S.series)||B.series[0]}
+const findSer=re=>B.series.find(s=>re.test(s.label));
+const volSer=()=>findSer(/net weight|volume/i)||B.series[0];
+function evSer(){return B.series.find(s=>s.id===S.evSeries)||B.series[0]}
 function method(s){return S.method&&s.fc.methods[S.method]?S.method:s.fc.default}
-function yoy(s){const n=s.val.length;return n>12?(s.val[n-1]/s.val[n-13]-1)*100:null}
+function yoy(s){if(!s)return null;const n=s.val.length;return n>12?(s.val[n-1]/s.val[n-13]-1)*100:null}
+const kpiLabel=s=>/net weight|volume/i.test(s.label)?'Export volume':/unit value/i.test(s.label)?'Export price':/value/i.test(s.label)?'Export value':s.label;
+const seriesTitle=s=>/unit value/i.test(s.label)?'Export price (unit value)':kpiLabel(s);
 function staleNote(s){if(B.meta.demo||!B.meta.snapshot)return '';const last=s.time[s.time.length-1],[ly,lm]=last.split('-').map(Number),[sy,sm]=B.meta.snapshot.split('-').map(Number),gap=(sy-ly)*12+(sm-lm);
-  return gap>6?`<div class="note"><b>Data ends ${esc(fmtMonth(last))}, ${gap} months before this snapshot.</b> UN Comtrade has not yet published China's monthly figures after that; only annual totals exist for later years. The forecast therefore covers a period that has passed and is checked against the published annual total on the Market and forecast tab.</div>`:''}
+  return gap>6?`<div class="note"><b>Data ends ${esc(fmtMonth(last))}, ${gap} months before this snapshot.</b> UN Comtrade has not yet published China's monthly figures after that. The ${H}-month forecast therefore covers a period that has passed; it is checked against the published annual total under Evidence.</div>`:''}
 
 /* ================= chart (one function, one theme) ================= */
 function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r))),f=r/p;return (f<1.5?1:f<3?2:f<7?5:10)*p}
 function tickFmt(v,st){const dp=st<1?Math.min(3,Math.ceil(-Math.log10(st)-1e-9)):0;return Math.abs(v)>=10000?(v/1000).toLocaleString('en-US',{maximumFractionDigits:1})+'k':v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp})}
 function xLabel(p,narrow){const [y,m]=p.split('-');return m==='01'?(narrow?y:'Jan '+y):MON[+m-1]}
-/* spec: {x:[YYYY-MM], series:[{name,label,labelColor,pts:[[i,v]],color,dash,w,end}], band:{lo,hi,color}, split, yUnit, aria, valueFmt} */
 function chart(el,spec){
   const W=Math.max(300,Math.round(el.clientWidth||800)),Ht=THEME.height(W),narrow=W<600;
   const labelled=spec.series.filter(s=>s.label&&s.pts.length);
@@ -276,8 +298,7 @@ function chart(el,spec){
   const n=spec.x.length,X=i=>m.l+(W-m.l-m.r)*i/Math.max(1,n-1),Y=v=>m.t+(Ht-m.t-m.b)*(1-(v-lo)/(hi-lo));
   const vf=spec.valueFmt||fv;let g='';
   if(spec.split!=null&&spec.split<n-1){const xs=X(spec.split);g+=`<rect x="${xs}" y="${m.t}" width="${W-m.r-xs}" height="${Ht-m.t-m.b}" fill="var(--fc-fill)"/>`+
-    `<line x1="${xs}" x2="${xs}" y1="${m.t}" y2="${Ht-m.b}" stroke="var(--ink-3)" stroke-dasharray="2 3"/>`+
-    `<text class="zone" x="${xs+8}" y="${m.t+14}">Forecast</text>`+(spec.split>2?`<text class="zone" x="${xs-8}" y="${m.t+14}" text-anchor="end">Actual</text>`:'')}
+    `<line x1="${xs}" x2="${xs}" y1="${m.t}" y2="${Ht-m.b}" stroke="var(--ink-3)" stroke-dasharray="2 3"/><text class="zone" x="${xs+8}" y="${m.t+14}">Forecast</text>`+(spec.split>2?`<text class="zone" x="${xs-8}" y="${m.t+14}" text-anchor="end">Actual</text>`:'')}
   for(let v=lo;v<=hi+1e-9;v+=st){g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${Math.abs(v-lo)<1e-9?THEME.axis:THEME.grid}"/><text x="${m.l-8}" y="${Y(v)+4}" text-anchor="end">${tickFmt(v,st)}</text>`}
   if(spec.yUnit)g+=`<text class="unit-label" x="0" y="${m.t-14}">${esc(spec.yUnit)}</text>`;
   let ticks=[];for(let i=0;i<n;i++){const mm=spec.x[i].slice(5);if(mm==='01'||(n<=30&&!narrow&&(mm==='04'||mm==='07'||mm==='10'))||(n<=14&&mm!=='01'))ticks.push(i)}
@@ -303,152 +324,127 @@ function chart(el,spec){
 function spark(vals,w=104,h=32,color='var(--ink-3)'){if(!vals||vals.length<2)return '';const lo=Math.min(...vals),hi=Math.max(...vals),X=i=>2+(w-6)*i/(vals.length-1),Y=v=>h-3-(h-6)*((v-lo)/((hi-lo)||1));
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" points="${vals.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/><circle cx="${X(vals.length-1)}" cy="${Y(vals[vals.length-1])}" r="2.5" fill="var(--ink)"/></svg>`}
 
-/* ================= scenario engine (unchanged) ================= */
+/* ================= scenario engine (formulas unchanged; runs on the export-volume series) ================= */
 // Market export volume:  V_t = baseline_t × (1 + d/100 × t/12)
 // Company export volume index = 100 × (V_t / V_0)^beta ;  price index P_t = 100 × (1 + p/100 × t/12)
 // Company revenue index R_t = share × (Vidx × P/100) + (1 − share) × P      (domestic volume held flat)
 // Operating margin mg_t = m0 + m × t/12 ;  operating profit per 100 of today's revenue E_t = R_t × mg_t / 100
 function effects(sid,skip){return (C.signals||[]).filter(s=>S.sigOn[s.id]&&s.id!==skip).reduce((a,s)=>{const e=s.eff[sid]||{};a.d+=+e.d||0;a.p+=+e.p||0;a.m+=+e.m||0;return a},{d:0,p:0,m:0})}
-function runScen(sid,withSig=true,skip=null){const s=ser(),f=s.fc.methods[method(s)].ahead,V0=s.val[s.val.length-1],p=S.params[sid],e=withSig?effects(sid,skip):{d:0,p:0,m:0};
+function runScen(sid,withSig=true,skip=null){const s=volSer(),f=s.fc.methods[method(s)].ahead,V0=s.val[s.val.length-1],p=S.params[sid],e=withSig?effects(sid,skip):{d:0,p:0,m:0};
   const d=p.d+e.d,pr=p.p+e.p,mm=p.m+e.m,sh=S.share/100;
   return f.map((b,i)=>{const t=i+1,V=b*(1+d/100*t/12),Vi=100*Math.pow(Math.max(V,1e-9)/V0,S.beta),P=100*(1+pr/100*t/12),R=sh*(Vi*P/100)+(1-sh)*P,mg=S.m0+mm*t/12;return {V,P,R,mg,E:R*mg/100}})}
+function verdictOf(o){if(o.bench)return 'bench';const v=SCEN.map(s=>S.scores[o.id][s.id]);if(v.some(x=>x==null))return 'none';return Math.min(...v)>=0?'robust':'contingent'}
+const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Not scored'),robust:tag('ok','Start now'),contingent:tag('warn','Prepare, then trigger')})[k];
 
-/* ================= renderers ================= */
-function header(){const b=C.brief||{},s=B.series[0];
-  $('h-sub').textContent=`For the leadership of ${(b['Intended user']||'a privately owned Chinese PV manufacturer').replace(/^A /,'a ').replace(/ \(strategy and sales leadership\)/,'')}. ${b['Country']||'China'}, solar PV cells and modules.`;
+/* ================= header ================= */
+function header(){const b=C.brief||{},s=volSer();
+  $('h-sub').textContent=`For the leadership of ${(b['Intended user']||'a privately owned Chinese PV manufacturer').replace(/^A /,'a ').replace(/ \(strategy and sales leadership\)/,'')}.`;
   const src=B.meta.demo?'<b style="color:var(--down)">Demo data, not evidence</b>':'Source <b>UN Comtrade</b>, HS 854142 + 854143';
   $('meta').innerHTML=`${src}<br>${s?`Data to <b>${esc(fmtMonth(s.time[s.time.length-1]))}</b> · `:''}Updated <b>${esc(fmtDate(B.meta.snapshot||B.meta.built))}</b>`;
-  $('demo').innerHTML=B.meta.demo?'<div class="note demo"><b>Demo mode.</b> The series are synthetic placeholders generated by build.py so the layout can be tested. Real data replaces them once data/processed/catalog.json exists.</div>':''}
+  $('demo').innerHTML=B.meta.demo?'<div class="note demo"><b>Demo mode.</b> Synthetic placeholder series for layout testing. Real data replaces them once data/processed/catalog.json exists.</div>':''}
 
-const kpiLabel=s=>/net weight|volume/i.test(s.label)?'Export volume':/unit value/i.test(s.label)?'Export price':/value/i.test(s.label)?'Export value':s.label;
-const seriesTitle=s=>/unit value/i.test(s.label)?'Export price (unit value)':kpiLabel(s);
-function kpiTile(s){const n=s.val.length,ch=yoy(s);
+/* ================= OVERVIEW ================= */
+function kpiTile(s){const n=s.val.length;
   return `<div class="card kpi c-3"><div class="label"><span>${esc(kpiLabel(s))}</span>${TAG.obs}</div>
    <div class="value">${fv(s.val[n-1])}<span class="unit">${esc(shortUnit(s.unit))}</span></div>
    <div class="small">${esc(fmtMonth(s.time[n-1]))}</div>
-   <div class="row">${deltaHTML(ch,'vs '+fmtMonth(s.time[n-13]||''))}${spark(s.val.slice(-24))}</div></div>`}
-
+   <div class="row">${deltaHTML(yoy(s),'vs '+fmtMonth(s.time[n-13]||''))}${spark(s.val.slice(-24))}</div></div>`}
 function scenarioBars(){if(!SCEN.length)return empty('No scenarios yet.');const rows=SCEN.map(x=>({x,o:runScen(x.id)[H-1]}));const max=Math.max(S.m0,...rows.map(r=>r.o.E),0.01)*1.1;
   return `<div class="bars">${rows.map(r=>`<div class="bar-row" style="--c:${r.x.color}"><span><span class="dot"></span>${esc(r.x.short)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(0,r.o.E)/max*100}%"></div><div class="bar-today" style="left:${S.m0/max*100}%" title="Today"></div></div><b style="text-align:right;font-weight:500">${f2(r.o.E)}</b></div>`).join('')}</div>
    <p class="small" style="margin-top:var(--sp-2)">Operating profit per 100 of today's revenue after ${H} months. Black tick: today (${f2(S.m0)}). Company figures are illustrative.</p>`}
-
-function renderOverview(){const b=C.brief||{},s=ser(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk],obs=B.series.slice(0,3);
-  const out=SCEN.map(x=>({x,o:runScen(x.id)[H-1]})).sort((a,c)=>a.o.E-c.o.E);
-  const fch=(fc.ahead[H-1]/s.val[n-1]-1)*100,y=yoy(s);
-  const field=k=>`<div>${esc(k)}</div><div>${esc(b[k]||'—')}</div>`;
-  const shown=Math.min(24,n),x=s.time.slice(n-shown).concat(s.fc.aheadTime);
-  $('t-overview').innerHTML=`${staleNote(s)}<div class="g12">
+function bottomLine(){const v=volSer(),u=findSer(/USD billion|, value$/i)||B.series.find(s=>/value/i.test(s.label)&&!/unit/i.test(s.label)),p=findSer(/unit value/i);
+  const fc=v.fc.methods[method(v)],out=SCEN.map(x=>({x,o:runScen(x.id)[H-1]})).sort((a,c)=>a.o.E-c.o.E);
+  const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent');
+  const P=[];
+  if(u&&p)P.push(`Chinese PV exports grew in volume (${pct(yoy(v))} year on year to ${fmtMonth(v.time[v.time.length-1])}) but fell in value (${pct(yoy(u))}), because the export price per kg dropped ${Math.abs(yoy(p)).toFixed(1)}%. Manufacturers are shipping more panels for less money.`);
+  else P.push(`${v.label}: ${pct(yoy(v))} year on year to ${fmtMonth(v.time[v.time.length-1])}.`);
+  P.push(`The baseline forecast points to ${fv(fc.ahead[H-1])} ${shortUnit(v.unit)} a month by ${fmtMonth(v.fc.aheadTime[H-1])} (indicative range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}).`+(out.length?` Across the three scenarios, operating profit after ${H} months ranges from ${f2(out[0].o.E)} (${out[0].x.short.toLowerCase()}) to ${f2(out[out.length-1].o.E)} (${out[out.length-1].x.short.toLowerCase()}) per 100 of today's revenue, against ${f2(S.m0)} today.`:''));
+  P.push(rob.length||con.length?`Moves that hold up in every future: ${rob.length?rob.map(o=>o.name.toLowerCase()).join('; '):'none yet'}. Moves to prepare and trigger on a signpost: ${con.length?con.map(o=>o.name.toLowerCase()).join('; '):'none'}.`:`The strategic options have not been scored yet, so no recommendation is shown. Score them under Strategy.`);
+  return P.map(x=>`<p>${esc(x)}</p>`).join('')}
+function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(v)],n=v.val.length,obs=B.series.slice(0,3);
+  const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent'),sp=C.signposts||[];
+  const li=(arr,f,none)=>arr.length?`<ul class="plain-list">${arr.map(f).join('')}</ul>`:`<p class="small">${none}</p>`;
+  $('t-overview').innerHTML=`${staleNote(v)}<div class="g12">
+   <div class="card c-12"><div class="strip">
+    <div><div class="k">Decision</div><div class="v">${esc(b['Decision']||'—')}</div></div>
+    <div><div class="k">Key question</div><div class="v">${esc(b['Key question']||'—')}</div></div>
+    <div><div class="k">Horizon</div><div class="v">Forecast ${esc((b['Forecast horizon']||'12 months').replace(/, monthly data/,''))}; scenarios ${esc((b['Scenario horizon']||'to 2030').toLowerCase())}</div></div></div></div>
    ${obs.map(kpiTile).join('')}
    <div class="card kpi c-3"><div class="label"><span>Forecast, ${H} months</span>${TAG.mod}</div>
-    <div class="value">${fv(fc.ahead[H-1])}<span class="unit">${esc(shortUnit(s.unit))}</span></div>
-    <div class="small">${esc(fmtMonth(s.fc.aheadTime[H-1]))}, range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}</div>
-    <div class="row">${deltaHTML(fch,'vs latest')}${spark(s.val.slice(-12).concat(fc.ahead),104,32,'var(--accent)')}</div></div>
-   <div class="card c-8"><div class="card-head"><div><h2>${esc(seriesTitle(s))}</h2>
-     <p class="takeaway">${esc(y==null?'':((y>=0?'Up ':'Down ')+Math.abs(y).toFixed(1)+'% year on year to '+fmtMonth(s.time[n-1])+'. '))}The recent pattern points to ${fv(fc.ahead[H-1])} ${esc(shortUnit(s.unit))} by ${esc(fmtMonth(s.fc.aheadTime[H-1]))}.</p></div><div class="tags">${TAG.obs} ${TAG.mod}</div></div>
-    <div id="chart-o"></div><div class="card-foot">${esc(s.label)}, monthly. Dashed: ${esc(fc.label.toLowerCase())} forecast. Shaded: indicative range from holdout error.</div></div>
-   <div class="card c-4"><div class="card-head"><div><h2>Scenario outlook</h2><p class="takeaway">${out.length?`Profit ranges from ${f2(out[0].o.E)} (${esc(out[0].x.short.toLowerCase())}) to ${f2(out[out.length-1].o.E)} (${esc(out[out.length-1].x.short.toLowerCase())}) per 100 of today's revenue.`:''}</p></div></div>${scenarioBars()}</div>
-   <div class="card c-8"><h2 style="margin-bottom:var(--sp-1)">The decision</h2><div class="kv">${['Intended user','Decision','Key question','Forecast horizon','Scenario horizon','Data mode'].map(field).join('')}</div>
-    <h3 style="margin:var(--sp-3) 0 var(--sp-1)">Why this context matters</h3>${b['Why this context matters']?`<p>${esc(b['Why this context matters'])}</p>`:empty('Not written yet (Brief sheet, row "Why this context matters").')}</div>
-   <div class="card c-4"><h2 style="margin-bottom:var(--sp-2)">How to read this board</h2><ol class="steps">
-    <li><b style="font-weight:500">Market and forecast</b><br><span class="small">Where exports stand and where the recent pattern points.</span></li>
-    <li><b style="font-weight:500">Scenarios</b><br><span class="small">Three possible futures; move the sliders to test assumptions.</span></li>
-    <li><b style="font-weight:500">Options and signposts</b><br><span class="small">Which moves are safe now and which wait for a signal.</span></li>
-    <li><b style="font-weight:500">Signals</b><br><span class="small">News that shifts the assumptions, with sources.</span></li></ol>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:var(--sp-3)">${TAG.obs}${TAG.mod}${TAG.ass}${tag('prop','Proposal')}</div>
-    <p class="small" style="margin-top:var(--sp-1)">Observed: public data. Modelled: forecast. Assumption: team choice. Proposal: not yet reviewed.</p></div>
-  </div>`;
-  chart($('chart-o'),{x,yUnit:shortUnit(s.unit),aria:`${s.label}, last ${shown} months and ${H}-month forecast`,
-    series:[{name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true},
-      {name:'Forecast',label:'Forecast',pts:[[shown-1,s.val[n-1]]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2}],
-    band:{lo:[[shown-1,s.val[n-1]]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,s.val[n-1]]].concat(fc.hi.map((v,i)=>[shown+i,v]))},split:shown-1})}
+    <div class="value">${fv(fc.ahead[H-1])}<span class="unit">${esc(shortUnit(v.unit))}</span></div>
+    <div class="small">${esc(fmtMonth(v.fc.aheadTime[H-1]))}, range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}</div>
+    <div class="row">${deltaHTML((fc.ahead[H-1]/v.val[n-1]-1)*100,'vs latest')}${spark(v.val.slice(-12).concat(fc.ahead),104,32,'var(--accent)')}</div></div>
+   <div class="card c-8 bottomline"><div class="card-head"><div><h2>Bottom line</h2><p class="small" style="margin-top:2px">Written automatically from the data and the current settings.</p></div></div>${bottomLine()}</div>
+   <div class="card c-4"><div class="card-head"><div><h2>Scenario outlook</h2></div>${TAG.out}</div>${scenarioBars()}<p style="margin:12px 0 0"><a href="#outlook">Explore the scenarios →</a></p></div>
+   <div class="card c-12"><div class="card-head"><div><h2>What to do</h2><p class="takeaway">From the options scored under Strategy and the signposts that tell us when to act.</p></div></div>
+    <div class="cols3">
+     <div><div class="col-h" style="color:var(--up)">Start now <span class="n">${rob.length}</span></div>${li(rob,o=>`<li>${esc(o.name)}</li>`,'No option scored as robust yet.')}</div>
+     <div><div class="col-h" style="color:#8A5A00">Prepare, then trigger <span class="n">${con.length}</span></div>${li(con,o=>`<li>${esc(o.name)}<span class="sub">Act when: ${esc(o.sig||'signpost not set')}</span></li>`,'No contingent option yet.')}</div>
+     <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}</span></li>`,'No signposts yet.')}</div></div>
+    <p style="margin:var(--sp-2) 0 0"><a href="#strategy">Open the options and signposts →</a></p></div>
+  </div>`}
 
-function renderMarket(){const s=ser(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk],shown=Math.min(48,n);
-  const x=s.time.slice(n-shown).concat(s.fc.aheadTime),hs=n-s.fc.holdout;
-  const mrows=Object.entries(s.fc.methods).map(([k,v])=>({k,...v}));const best=mrows.slice().sort((a,b)=>a.mape-b.mape)[0],bench=s.fc.methods.snaive;
-  const beat=bench&&best.k!=='snaive'?`${esc(best.label)} had the lowest holdout error: ${f2(best.mape)}% against ${f2(bench.mape)}% for the seasonal benchmark.`:'No method beat the seasonal benchmark on the holdout.';
-  const ac=s.annualCheck,am=ac&&ac.methods[mk];const acTake=am?`The ${esc(am.label.toLowerCase())} forecast was ${Math.abs(am.error*100).toFixed(1)}% ${am.error>=0?'above':'below'} the published ${esc(ac.year)} total.`:'';
-  $('t-market').innerHTML=`${staleNote(s)}<div class="g12">
-   <div class="stack c-8"><div class="card"><div class="card-head"><div><h2>${esc(seriesTitle(s))}</h2>
-      <p class="takeaway">Latest ${fv(s.val[n-1])} ${esc(shortUnit(s.unit))} in ${esc(fmtMonth(s.time[n-1]))}, ${pct(yoy(s))} year on year. The ${esc(fc.label.toLowerCase())} method points to ${fv(fc.ahead[H-1])} by ${esc(fmtMonth(s.fc.aheadTime[H-1]))}.</p></div>
-     <div class="controls"><label class="field">Series<select id="c-series">${B.series.map(o=>`<option value="${esc(o.id)}" ${o.id===s.id?'selected':''}>${esc(seriesTitle(o))}</option>`).join('')}</select></label>
-      <label class="field">Method<select id="c-method">${mrows.map(m=>`<option value="${m.k}" ${m.k===mk?'selected':''}>${esc(m.label)}</option>`).join('')}</select></label></div></div>
-    <div id="chart-m"></div>
-    <div class="legend"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>Holdout test: forecast for the hidden months</span><span>Shaded: indicative 80% range, not a statistical interval</span></div>
-    <div class="card-foot">${TAG.obs} ${TAG.mod} Source ${esc(s.source_id)}: ${esc(s.note||'see Sources tab')}.${s.flag.includes('i')?' Months marked i were interpolated.':''}</div></div>
-    <div class="card"><details class="more"><summary>Forecast target options considered (${(C.targets||[]).length})</summary><div style="margin-top:var(--sp-2)">
-    ${C.targetDecision?`<p>Team decision: <b>${esc(C.targetDecision)}</b>. ${esc(C.targetReason||'')}</p>`:'<p class="small">Team decision not yet recorded in the Forecast target sheet.</p>'}
-    ${tableHTML([{h:'ID',k:'ID'},{h:'Indicator',k:'Indicator'},{h:'Source',k:'Source and dataset'},{h:'Frequency / unit',k:'Frequency / unit'},{h:'Problems to handle',k:'Problems to handle'}],C.targets||[])}</div></details></div></div>
-   <div class="stack c-4">
-    <div class="card"><div class="card-head" style="margin-bottom:12px"><div><h3>Holdout test</h3><p class="takeaway" style="font-size:var(--fs-small)">${beat}</p></div>${TAG.mod}</div>
-     ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===mk?' '+tag('mod','In use'):'')},{h:'MAPE',n:1,f:r=>f2(r.mape)+'%'},{h:'RMSE',n:1,f:r=>fv(r.rmse)}],mrows)}
-     <div class="card-foot">Last ${s.fc.holdout} months (from ${esc(fmtMonth(s.fc.holdoutStart))}) hidden, forecast and scored. The team recomputes these in Excel.</div></div>
-    ${ac?`<div class="card"><div class="card-head" style="margin-bottom:12px"><div><h3>Check against ${esc(ac.year)} actual</h3><p class="takeaway" style="font-size:var(--fs-small)">${acTake}</p></div>${TAG.obs}</div>
-     <p class="small" style="margin-bottom:8px">Published ${esc(ac.year)} total: <b style="color:var(--ink);font-weight:500">${fv(ac.actual)} ${esc(shortUnit(s.unit))}</b></p>
-     ${tableHTML([{h:'Method',f:r=>esc(r.label)},{h:'Forecast',n:1,f:r=>fv(r.forecast)},{h:'Error',n:1,f:r=>pct(r.error*100)}],Object.entries(ac.methods).map(([k,v])=>({k,...v})))}
-     <div class="card-foot">${esc(ac.source)}</div></div>`:''}
-   </div>
-
-  </div>`;
-  chart($('chart-m'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and ${H}-month forecast`,
-    series:[{name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true},
-      {name:'Holdout test',pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),color:'var(--ink-3)',dash:'1.5 3',w:1.6},
-      {name:'Forecast',label:'Forecast',pts:[[shown-1,s.val[n-1]]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2}],
-    band:{lo:[[shown-1,s.val[n-1]]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,s.val[n-1]]].concat(fc.hi.map((v,i)=>[shown+i,v]))}});
-  $('c-series').onchange=e=>{S.series=e.target.value;S.method=null;commit()};$('c-method').onchange=e=>{S.method=e.target.value;commit()}}
-
-function renderScenarios(){if(!SCEN.length){$('t-scenarios').innerHTML=empty('No scenarios yet (Scenarios sheet).');return}
-  const s=ser(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk],shown=S.metric==='vol'?Math.min(24,n):1;
-  const x=s.time.slice(n-shown).concat(s.fc.aheadTime);const series=[];
-  const val=o=>S.metric==='vol'?o.V:S.metric==='rev'?o.R:o.E,start=S.metric==='vol'?s.val[n-1]:S.metric==='rev'?100:S.m0;
-  if(S.metric==='vol'){series.push({name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2});series.push({name:'Baseline',pts:[[shown-1,start]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:'var(--ink-3)',dash:'5 4',w:1.5})}
-  else series.push({name:null,pts:[[shown-1,start],[shown+H-1,start]],color:'var(--ink-3)',dash:'2 3',w:1});
-  SCEN.forEach(sc=>{if(S.showBase&&(C.signals||[]).length)series.push({name:null,pts:[[shown-1,start]].concat(runScen(sc.id,false).map((o,i)=>[shown+i,val(o)])),color:sc.color,dash:'1 4',w:1.3});
-    series.push({name:sc.short,label:sc.short,labelColor:sc.ink,pts:[[shown-1,start]].concat(runScen(sc.id).map((o,i)=>[shown+i,val(o)])),color:sc.color,w:2.4,end:true})});
-  const unit={vol:shortUnit(s.unit),rev:'Index, today = 100',ebit:"Per 100 of today's revenue"}[S.metric];
-  const title={vol:'Market export volume by scenario',rev:'Company revenue by scenario',ebit:'Company operating profit by scenario'}[S.metric];
-  const rows=SCEN.map(sc=>{const o=runScen(sc.id)[H-1],o0=runScen(sc.id,false)[H-1];return {sc,o,o0}});
-  const srt=rows.slice().sort((a,b)=>val(a.o)-val(b.o)),lowR=srt[0],hiR=srt[srt.length-1],vfm=S.metric==='vol'?fv:f2;
-  const take=`By ${fmtMonth(s.fc.aheadTime[H-1])}, ${S.metric==='vol'?'volume':S.metric==='rev'?'revenue':'profit'} ranges from ${vfm(val(lowR.o))} (${lowR.sc.short.toLowerCase()}) to ${vfm(val(hiR.o))} (${hiR.sc.short.toLowerCase()}).`;
-  const U=C.uncertainties||[];
+/* ================= OUTLOOK (forecast + scenarios + signals) ================= */
+function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk];
+  if(!SCEN.length){$('t-outlook').innerHTML=empty('No scenarios yet (Scenarios sheet).');return}
+  const vol=S.metric==='vol',shown=vol?Math.min(24,n):1,x=s.time.slice(n-shown).concat(s.fc.aheadTime);
+  const val=o=>vol?o.V:S.metric==='rev'?o.R:o.E,start=vol?s.val[n-1]:S.metric==='rev'?100:S.m0,vfm=vol?fv:f2;
+  const series=[];
+  if(vol){series.push({name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true});
+    series.push({name:'Forecast',label:'Forecast',labelColor:'var(--accent)',pts:[[shown-1,start]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2})}
+  else series.push({name:'Today',pts:[[shown-1,start],[shown+H-1,start]],color:'var(--ink-3)',dash:'2 3',w:1});
+  SCEN.forEach(sc=>series.push({name:sc.short,label:sc.short,labelColor:sc.ink,pts:[[shown-1,start]].concat(runScen(sc.id).map((o,i)=>[shown+i,val(o)])),color:sc.color,w:2.2,end:true}));
+  const unit={vol:shortUnit(s.unit)+' per month',rev:'Revenue index, today = 100',ebit:"Operating profit per 100 of today's revenue"}[S.metric];
+  const rows=SCEN.map(sc=>({sc,o:runScen(sc.id)[H-1],o0:runScen(sc.id,false)[H-1]}));
+  const srt=rows.slice().sort((a,b)=>val(a.o)-val(b.o)),lo=srt[0],hi=srt[srt.length-1];
+  const take=vol?`The baseline forecast reaches ${fv(fc.ahead[H-1])} ${shortUnit(s.unit)} by ${fmtMonth(s.fc.aheadTime[H-1])}. The scenarios bend it from ${fv(lo.o.V)} (${lo.sc.short.toLowerCase()}) to ${fv(hi.o.V)} (${hi.sc.short.toLowerCase()}).`
+    :`By ${fmtMonth(s.fc.aheadTime[H-1])}, ${S.metric==='rev'?'revenue':'profit'} ranges from ${vfm(val(lo.o))} (${lo.sc.short.toLowerCase()}) to ${vfm(val(hi.o))} (${hi.sc.short.toLowerCase()}), against ${vfm(start)} today.`;
   const meta=[['d','Export volume vs baseline','% per year',-20,20,0.5],['p','Export price','% per year',-30,30,0.5],['m','Operating margin change','pp by month '+H,-10,10,0.1]];
-  const groups=SCEN.map(sc=>{const e=effects(sc.id);return `<details class="slider-group" open style="--c:${sc.color}"><summary><span><span class="dot"></span><span style="color:${sc.ink}">${esc(sc.short)}</span></span></summary>
-    ${meta.map(([k,l,u,a,b,st])=>`<div class="srow"><div class="lbl">${l}<span>${u}${e[k]?' · signals add '+sgn(e[k]):''}</span></div><input type="range" data-p="${sc.id}.${k}" min="${a}" max="${b}" step="${st}" value="${S.params[sc.id][k]}" aria-label="${esc(sc.short+' scenario: '+l)}"><span class="val">${S.params[sc.id][k]}</span></div>`).join('')}
-    ${sc.why?`<p class="small" style="margin-top:12px">${esc(sc.why)} ${sc.src?'('+esc(sc.src)+')':''}</p>`:''}</details>`}).join('');
-  const ci=C.company||{};const cs=(k,o)=>o?`<div class="srow"><div class="lbl">${esc(o.label)}<span>${esc(o.unit)}</span></div><input type="range" data-g="${k}" min="${o.min}" max="${o.max}" step="${k==='beta'?0.1:0.5}" value="${S[k]}" aria-label="${esc(o.label)}"><span class="val">${S[k]}</span></div>`:'';
-  $('t-scenarios').innerHTML=`<div class="g12">
-   ${rows.map(r=>`<div class="card scen-card c-4" style="--c:${r.sc.color};--c-ink:${r.sc.ink}"><div class="card-head" style="margin-bottom:0"><span class="name">${esc(r.sc.name)}</span>${statusTag(r.sc.status)}</div>
-     <p class="story" title="${esc(r.sc.story)}">${esc(r.sc.story)}</p>
-     <div class="nums"><div>Volume, ${esc(shortUnit(s.unit))}<b>${fv(r.o.V)}</b></div><div>Revenue idx<b>${f1(r.o.R)}</b></div><div>Profit / 100<b>${f2(r.o.E)}</b></div></div></div>`).join('')}
-   <div class="stack c-8">
-    <div class="card"><div class="card-head"><div><h2>${title}</h2><p class="takeaway">${esc(take)}</p></div>
-      <div class="seg" role="group" aria-label="Measure">${[['vol','Volume'],['rev','Revenue'],['ebit','Profit']].map(([k,l])=>`<button data-metric="${k}" aria-pressed="${S.metric===k}">${l}</button>`).join('')}</div></div>
-     <div id="chart-s"></div>
-     <div class="card-foot" style="display:flex;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap"><span>${TAG.out} Consequences of the assumptions, not predictions. No probabilities.</span>${(C.signals||[]).length?`<label class="check"><input type="checkbox" id="c-base" ${S.showBase?'checked':''}> Show paths without signals (dotted)</label>`:''}</div></div>
-    <div class="card"><div class="card-head" style="margin-bottom:8px"><h3>Outcomes after ${H} months</h3>${TAG.out}</div>
-     ${tableHTML([{h:'Scenario',f:r=>`<span class="dot" style="--c:${r.sc.color}"></span>${esc(r.sc.short)}`},{h:'Volume, '+shortUnit(s.unit),n:1,f:r=>fv(r.o.V)},{h:'Price idx',n:1,f:r=>f1(r.o.P)},{h:'Revenue idx',n:1,f:r=>f1(r.o.R)},{h:'Margin',n:1,f:r=>f1(r.o.mg)+'%'},{h:'Profit / 100',n:1,f:r=>f2(r.o.E)},{h:'Signals effect',n:1,f:r=>sgn(r.o.E-r.o0.E,2)}],rows)}
-     <details class="more" style="margin-top:var(--sp-2)"><summary>Show the maths</summary><p class="small" style="margin-top:8px">Market volume = baseline × (1 + volume assumption × t/12). Company export volume index = 100 × (market volume ÷ volume today)^sensitivity. Price index = 100 × (1 + price assumption × t/12). Revenue index = export share × volume index × price index ÷ 100 + (1 − export share) × price index. Margin = starting margin + margin change × t/12. Profit per 100 of today's revenue = revenue index × margin ÷ 100.</p></details></div>
-    <div class="card"><h3 style="margin-bottom:4px">Critical uncertainties</h3>
-     ${U.length?`<div class="kv">${U.map(u=>`<div>${esc(u['Uncertainty'])}</div><div>${esc(u['One end'])} ↔ ${esc(u['Other end'])}<span class="small" style="display:block">${esc(u['Why it is uncertain (evidence)']||'')}</span></div>`).join('')}</div>`:empty('No uncertainties recorded.')}</div>
-   </div>
-   <div class="card c-4"><div class="card-head"><div><h3>Assumptions you can change</h3><p class="takeaway" style="font-size:var(--fs-small)">Drag and release to recompute. Defaults come from the team's Scenarios sheet; changes stay in this browser.</p></div>${TAG.ass}</div>
-    ${groups}
-    <details class="slider-group" open style="--c:var(--ink-2)"><summary><span>Company inputs ${TAG.illu}</span></summary>${cs('m0',ci.m0)}${cs('share',ci.share)}${cs('beta',ci.beta)}<p class="small" style="margin-top:12px">Not real company data.</p></details></div>
-  </div>`;
-  chart($('chart-s'),{x,yUnit:unit,series,split:shown-1,aria:title,valueFmt:vfm});
+  const cards=rows.map(r=>{const sc=r.sc,e=effects(sc.id);return `<div class="card scen-card c-4" style="--c:${sc.color};--c-ink:${sc.ink}">
+    <div class="card-head" style="margin-bottom:0"><span class="name">${esc(sc.name)}</span>${statusTag(sc.status)}</div>
+    <p class="story" title="${esc(sc.story)}">${esc(sc.story)}</p>
+    <div class="nums"><div>Volume, ${esc(shortUnit(s.unit))}<b>${fv(r.o.V)}</b></div><div>Revenue idx<b>${f1(r.o.R)}</b></div><div>Profit / 100<b>${f2(r.o.E)}</b></div></div>
+    <p class="small" style="margin:8px 0 0">Price index ${f1(r.o.P)} · margin ${f1(r.o.mg)}% · news effect ${sgn(r.o.E-r.o0.E,2)}</p>
+    <details class="adj" data-open="${sc.id}" ${S.open[sc.id]?'open':''}><summary>Adjust assumptions ${TAG.ass}</summary>
+     ${meta.map(([k,l,u,a,b,st])=>`<div class="srow"><div class="lbl">${l}<span>${u}${e[k]?' · news adds '+sgn(e[k]):''}</span></div><input type="range" data-p="${sc.id}.${k}" min="${a}" max="${b}" step="${st}" value="${S.params[sc.id][k]}" aria-label="${esc(sc.short+' scenario: '+l)}"><span class="val">${S.params[sc.id][k]}</span></div>`).join('')}
+     ${sc.why?`<p class="small" style="margin-top:12px">${esc(sc.why)} ${sc.src?'('+esc(sc.src)+')':''}</p>`:''}</details></div>`}).join('');
+  const G=C.signals||[];
+  const news=G.map(g=>{const c=SCEN.map(sc=>S.sigOn[g.id]?runScen(sc.id)[H-1].E-runScen(sc.id,true,g.id)[H-1].E:null);
+    return `<div class="news"><input type="checkbox" data-on="${esc(g.id)}" ${S.sigOn[g.id]?'checked':''} aria-label="Apply: ${esc(g.title)}" style="margin-top:3px">
+     <div><div class="title">${g.url?`<a href="${esc(g.url)}" target="_blank" rel="noopener" style="color:var(--ink)">${esc(g.title)}</a>`:esc(g.title)}</div>
+      <div class="small">${esc(g.publisher)}${g.date?' · '+esc(g.date):''} · ${esc(g.pestle)} ${/hypo/i.test(g.kind)?tag('ass','Hypothetical'):''} ${statusTag(g.status)}</div>
+      <details class="more" style="margin-top:4px"><summary>Fact and our judgement</summary><p class="small" style="margin-top:6px;color:var(--ink-2)"><b style="font-weight:600">Fact.</b> ${esc(g.fact||'–')}<br><b style="font-weight:600">Judgement.</b> ${esc(g.note||'–')}</p></details></div>
+     <div class="eff">${SCEN.map((sc,i)=>`<span>${esc(sc.short.slice(0,4))}. <b>${c[i]==null?'off':sgn(c[i],2)}</b></span>`).join('')}</div></div>`}).join('');
+  const U=C.uncertainties||[],ci=C.company||{};
+  const cs=(k,o)=>o?`<div class="srow"><div class="lbl">${esc(o.label)}<span>${esc(o.unit)}</span></div><input type="range" data-g="${k}" min="${o.min}" max="${o.max}" step="${k==='beta'?0.1:0.5}" value="${S[k]}" aria-label="${esc(o.label)}"><span class="val">${S[k]}</span></div>`:'';
+  $('t-outlook').innerHTML=`${staleNote(s)}<div class="g12">
+   <div class="card c-12"><div class="card-head"><div><h2>Outlook to ${esc(fmtMonth(s.fc.aheadTime[H-1]))}: forecast and scenarios</h2><p class="takeaway">${esc(take)}</p></div>
+     <div class="seg" role="group" aria-label="Measure">${[['vol','Export volume'],['rev','Company revenue'],['ebit','Company profit']].map(([k,l])=>`<button data-metric="${k}" aria-pressed="${S.metric===k}">${l}</button>`).join('')}</div></div>
+    <div id="chart-x"></div>
+    <div class="card-foot">${vol?`${TAG.obs} Actual, UN Comtrade. ${TAG.mod} Baseline: ${esc(fc.label.toLowerCase())}, shaded indicative range. `:''}${TAG.out} Scenario lines apply each scenario's assumptions and the news below. Possible futures, not predictions; no probabilities.</div></div>
+   ${cards}
+   <div class="card c-8"><div class="card-head"><div><h3>News that shifts the scenarios</h3><p class="takeaway" style="font-size:var(--fs-small)">Switch an item off to see its effect. Numbers show the change in operating profit per 100 of today's revenue after ${H} months.</p></div></div>
+    ${news||empty('No news items yet (Signals sheet).')}</div>
+   <div class="stack c-4">
+    <div class="card"><h3 style="margin-bottom:8px">Key uncertainties</h3>${U.length?`<ul class="plain-list">${U.map(u=>`<li>${esc(u['Uncertainty'])}<span class="sub">${esc(u['One end'])} ↔ ${esc(u['Other end'])}</span></li>`).join('')}</ul>`:empty('None recorded.')}</div>
+    <div class="card"><details class="more" data-open="company" ${S.open.company?'open':''}><summary>Company inputs (illustrative)</summary>${cs('m0',ci.m0)}${cs('share',ci.share)}${cs('beta',ci.beta)}<p class="small" style="margin-top:12px">Not real company data.</p></details>
+     <details class="more" style="margin-top:12px"><summary>How the numbers are calculated</summary><p class="small" style="margin-top:8px">Market volume = baseline × (1 + volume assumption × t/12). Company export volume index = 100 × (market volume ÷ volume today)^sensitivity. Price index = 100 × (1 + price assumption × t/12). Revenue index = export share × volume index × price index ÷ 100 + (1 − export share) × price index. Margin = starting margin + margin change × t/12. Profit per 100 of today's revenue = revenue index × margin ÷ 100.</p></details></div>
+   </div></div>`;
+  chart($('chart-x'),{x,yUnit:unit,series,split:shown-1,aria:'Outlook: '+unit+' by scenario',valueFmt:vfm,
+    band:vol?{lo:[[shown-1,start]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,start]].concat(fc.hi.map((v,i)=>[shown+i,v]))}:null});
   document.querySelectorAll('[data-metric]').forEach(b=>b.onclick=()=>{S.metric=b.dataset.metric;commit()});
-  const cb=$('c-base');if(cb)cb.onchange=e=>{S.showBase=e.target.checked;commit()};
+  document.querySelectorAll('details[data-open]').forEach(d=>d.ontoggle=()=>{S.open[d.dataset.open]=d.open;save()});
+  document.querySelectorAll('[data-on]').forEach(e=>e.onchange=()=>{S.sigOn[e.dataset.on]=e.checked;commit()});
   document.querySelectorAll('input[type=range]').forEach(r=>{r.oninput=()=>r.parentElement.querySelector('.val').textContent=r.value;
     r.onchange=()=>{if(r.dataset.p){const [a,k]=r.dataset.p.split('.');S.params[a][k]=+r.value}else S[r.dataset.g]=+r.value;commit()}})}
 
-function verdictOf(o){if(o.bench)return 'bench';const v=SCEN.map(s=>S.scores[o.id][s.id]);if(v.some(x=>x==null))return 'none';return Math.min(...v)>=0?'robust':'contingent'}
-const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Score all'),robust:tag('ok','Start now'),contingent:tag('warn','Prepare, then trigger')})[k];
-function renderOptions(){const O=C.options||[];const v=O.map(verdictOf),cnt=k=>v.filter(x=>x===k).length;
+/* ================= STRATEGY ================= */
+function renderStrategy(){const O=C.options||[];const v=O.map(verdictOf),cnt=k=>v.filter(x=>x===k).length;
   const take=cnt('none')===O.filter(o=>!o.bench).length?'No option has been scored yet. Score each one to see which moves are robust.':`${cnt('robust')} robust (start now), ${cnt('contingent')} contingent (wait for a signpost)${cnt('none')?`, ${cnt('none')} not yet scored`:''}.`;
-  const showEach=!allProposal(O);
+  const showEach=!allProposal(O),sp=C.signposts||[];
   const rows=O.map((o,i)=>`<tr${o.bench?' style="color:var(--ink-2)"':''}><td><span style="font-weight:500">${esc(o.name)}</span>${rowStatus(o,showEach)}<span class="sub">${esc(o.what)}</span></td>${SCEN.map(s=>`<td class="n"><select class="score" data-score="${o.id}.${s.id}" aria-label="${esc(o.name+', score under '+s.short)}"><option value="">–</option>${[-2,-1,0,1,2].map(x=>`<option value="${x}" ${S.scores[o.id][s.id]===x?'selected':''}>${x>0?'+'+x:x}</option>`).join('')}</select></td>`).join('')}<td>${verdictTag(v[i])}</td><td class="small" style="color:var(--ink-2)">${esc(o.sig)}</td></tr>`).join('');
-  const sp=C.signposts||[];
-  $('t-options').innerHTML=`<div class="g12"><div class="card c-12"><div class="card-head"><div><h2>Strategic options for the manufacturer</h2><p class="takeaway">${esc(take)}</p></div></div>
-   <p class="small" style="margin-bottom:var(--sp-2)">Scored −2 (hurts) to +2 (helps) in each future. Zero or better in all three = robust: start now. Negative in any = contingent: prepare and wait for the signpost. Scores are team judgement; change them here to test the verdict.</p>
+  $('t-strategy').innerHTML=`<div class="g12"><div class="card c-12"><div class="card-head"><div><h2>Strategic options for the manufacturer</h2><p class="takeaway">${esc(take)}</p></div></div>
+   <p class="small" style="margin-bottom:var(--sp-2)">Scored −2 (hurts) to +2 (helps) in each scenario. Zero or better in all three: robust, start now. Negative in any: contingent, prepare and wait for the signpost. Scores are team judgement; change them here to test the verdict.</p>
    ${showEach?'':proposalNote(O)}
    ${O.length?`<div class="tablewrap"><table><thead><tr><th>Option</th>${SCEN.map(s=>`<th class="n" style="color:${s.ink}">${esc(s.short)}</th>`).join('')}<th>Verdict</th><th>Signpost to act</th></tr></thead><tbody>${rows}</tbody></table></div>`:empty('No options yet (Options sheet).')}</div>
    <div class="card c-12"><div class="card-head"><div><h2>Signposts</h2><p class="takeaway">Indicators with thresholds. When one is crossed, it points to the future that is arriving and the action to take.</p></div></div>
@@ -456,60 +452,79 @@ function renderOptions(){const O=C.options||[];const v=O.map(verdictOf),cnt=k=>v
    ${tableHTML([{h:'Indicator',f:r=>esc(r['Indicator'])+rowStatus(r,!allProposal(sp))},{h:'Threshold',n:1,f:r=>esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+' '+esc(r['Unit']||'')},{h:'Reading',n:1,f:()=>'<span class="small">Not linked yet</span>'},{h:'Points to',k:'Points to'},{h:'Action if tripped',k:'Action if tripped'}],sp,{empty:'No signposts yet (Signposts sheet).'})}</div></div>`;
   document.querySelectorAll('[data-score]').forEach(e=>e.onchange=()=>{const [o,s]=e.dataset.score.split('.');S.scores[o][s]=e.value===''?null:+e.value;commit()})}
 
-function renderSignals(){const G=C.signals||[];
-  const imp=G.map(g=>({g,c:SCEN.map(sc=>S.sigOn[g.id]?runScen(sc.id)[H-1].E-runScen(sc.id,true,g.id)[H-1].E:null)}));
-  const cards=G.map(s=>`<div class="card signal ${S.sigOn[s.id]?'on':''}"><div class="card-head" style="margin-bottom:8px"><div style="display:flex;gap:6px;flex-wrap:wrap">${tag(/hypo/i.test(s.kind)?'ass':'obs',s.kind)}${tag('plain',s.pestle)}${s.date?tag('plain',s.date):''}${statusTag(s.status)}</div>
-     <label class="toggle"><input type="checkbox" data-on="${esc(s.id)}" ${S.sigOn[s.id]?'checked':''}> Applied</label></div>
-    <h3>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--ink)">${esc(s.title)}</a>`:esc(s.title)}</h3><div class="small">${esc(s.publisher)}</div>
-    ${s.fact?`<p style="margin-top:12px"><span class="small" style="font-weight:600;color:var(--ink-2)">Fact</span><br>${esc(s.fact)}</p>`:''}<p style="margin-top:8px"><span class="small" style="font-weight:600;color:var(--ink-2)">Our judgement</span><br>${esc(s.note)}</p></div>`);
-  const on=G.filter(g=>S.sigOn[g.id]).length;
-  $('t-signals').innerHTML=`<div class="g12">
-   <div class="card c-12"><div class="card-head"><div><h2>Signals</h2><p class="takeaway">${on} of ${G.length} signals applied. Each keeps the stated fact apart from our judgement, which shifts the scenario assumptions. Switch a signal off to see its effect.</p></div></div>
-   <h3 style="margin:var(--sp-1) 0 4px">Impact on operating profit after ${H} months</h3><p class="small" style="margin-bottom:8px">Change per 100 of today's revenue when the signal is on, others unchanged.</p>
-   ${tableHTML([{h:'Signal',f:r=>esc(r.g.title)},...SCEN.map((sc,i)=>({h:sc.short,n:1,f:r=>r.c[i]==null?'<span class="small">off</span>':sgn(r.c[i],2)}))],imp,{empty:'Appears when signals exist.'})}</div>
-   ${G.length?G.map((g,i)=>`<div class="c-6" style="display:grid;align-self:stretch">${cards[i]}</div>`).join(''):`<div class="c-12">${empty('No signals yet. Add news items in the Signals sheet.')}</div>`}</div>`;
-  document.querySelectorAll('[data-on]').forEach(e=>e.onchange=()=>{S.sigOn[e.dataset.on]=e.checked;commit()})}
-
-function renderFrameworks(){const P=C.pestle||[],D=C.diamond||[];const ev=(r,k)=>r[k]?esc(r[k])+(r['Source ID']?' '+tag('plain',r['Source ID']):''):'<span class="small">No evidence yet</span>';
-  $('t-frameworks').innerHTML=`<div class="g12">
-   <div class="card c-12"><div class="card-head"><div><h2>PESTLE linked to indicators and drivers</h2><p class="takeaway">Each factor names what is watched, the evidence held, and the model driver it moves. Rows without evidence are gaps, not findings.</p></div></div>
+/* ================= CONTEXT ================= */
+function renderContext(){const b=C.brief||{},P=C.pestle||[],D=C.diamond||[];const ev=(r,k)=>r[k]?esc(r[k])+(r['Source ID']?' '+tag('plain',r['Source ID']):''):'<span class="small">No evidence yet</span>';
+  $('t-context').innerHTML=`<div class="g12">
+   <div class="card c-12"><h2 style="margin-bottom:8px">Why this context matters</h2>${b['Why this context matters']?`<p>${esc(b['Why this context matters'])}</p>`:empty('Not written yet (Brief sheet, row "Why this context matters").')}</div>
+   <div class="card c-12"><div class="card-head"><div><h2>PESTLE: drivers linked to indicators</h2><p class="takeaway">Each factor names what is watched, the evidence held, and the scenario driver it moves. Rows without evidence are gaps, not findings.</p></div></div>
     ${proposalNote(P)}${tableHTML([{h:'Factor',k:'Factor',keep:1},{h:'Driver',f:r=>esc(r['Driver (what we watch)'])+rowStatus(r,!allProposal(P)),keep:1,w:'34%'},{h:'Evidence',f:r=>ev(r,'Evidence: fact as stated, with date'),keep:1},{h:'Indicator',k:'Indicator'},{h:'Effect on manufacturer',k:'Effect on the manufacturer (our judgement)'},{h:'Model driver',k:'Model driver'},{h:'Scenarios',k:'Scenarios affected'}],P,{empty:'PESTLE sheet is empty.',hideEmpty:1})}</div>
    <div class="card c-12"><div class="card-head"><div><h2>Porter's Diamond: China's PV manufacturing</h2><p class="takeaway">Competitiveness determinants, each with the question we ask and the evidence held.</p></div></div>
     ${proposalNote(D)}${tableHTML([{h:'Determinant',f:r=>'<span style="font-weight:500">'+esc(r['Determinant'])+'</span>'+rowStatus(r,!allProposal(D)),keep:1,w:'22%'},{h:'Question',k:'Question',keep:1},{h:'Evidence',f:r=>ev(r,'Evidence: fact as stated, with date'),keep:1},{h:'Indicator',k:'Indicator'},{h:'Implication',k:'Implication for the manufacturer'},{h:'Driver',k:'Model driver'}],D,{empty:'Diamond sheet is empty.',hideEmpty:1})}</div></div>`}
 
-function renderSources(){const D=C.sources||[];const used=D.filter(r=>isDone(r.Status)).length;
-  $('t-sources').innerHTML=`<div class="g12"><div class="card c-12"><div class="card-head"><div><h2>Sources</h2><p class="takeaway">${D.length} sources recorded at dataset level, ${used} verified or in use. Each lists the table, unit, coverage, gaps and transformations.</p></div></div>
-   ${tableHTML([{h:'ID',k:'ID',keep:1},{h:'Dataset',f:r=>'<span style="font-weight:500">'+esc(r['Name (exact table or article title)'])+'</span><span class="sub">'+esc(r['Provider / publisher']||'')+(r['URL (table-level link)']&&/^https?:/.test(r['URL (table-level link)'])?` · <a href="${esc(r['URL (table-level link)'].split(' ')[0])}" target="_blank" rel="noopener">link</a>`:'')+'</span>',keep:1,w:'26%'},{h:'Code / filter',f:r=>(r['Dataset code / table']?`<code>${esc(r['Dataset code / table'])}</code>`:'')+`<span class="sub">${esc(r['Variables and filters']||'')}</span>`},{h:'Unit',k:'Unit'},{h:'Coverage',f:r=>esc(r['Coverage (from-to)']||'')+(r['Access date']?`<span class="sub">Accessed ${esc(fmtDate(r['Access date']))}</span>`:'')},{h:'Gaps and flags',k:'Missing values and flags'},{h:'Transformations',k:'Transformations applied'},{h:'Status',f:r=>statusTag(r.Status),keep:1}],D,{empty:'Sources sheet is empty.',hideEmpty:1})}</div>
-   <div class="card c-12"><h3 style="margin-bottom:8px">Live or snapshot</h3><p>${B.meta.demo?'Currently demo data. ':''}The board is a dated snapshot. A scheduled GitHub Action re-runs <code>scripts/fetch.py</code> and <code>scripts/build.py</code> monthly and whenever the team workbook changes, then redeploys the page. The snapshot date is shown in the header.</p></div></div>`}
-
-function renderMethod(){const s=ser(),fc=s.fc;
-  $('t-method').innerHTML=`<div class="g12">
-   <div class="card c-12"><h2 style="margin-bottom:8px">Forecast method</h2><p>Four simple methods are fitted on the series (${esc(s.label)}): seasonal naive (the benchmark: same month last year), 12-month moving average, linear trend, and linear trend plus a monthly seasonal index. The last ${fc.holdout} months are hidden, forecast and scored (MAPE, RMSE). The board uses the lowest-error method that beats the benchmark, currently <span style="font-weight:500">${esc(fc.methods[fc.default].label)}</span>, and forecasts ${H} months from all data. The shaded range is ±1.28 × holdout RMSE, widening with the square root of the step: an indicative guide, not a statistical interval.</p></div>
-   <div class="card c-6"><h3 style="margin-bottom:12px">Data checks</h3>${tableHTML([{h:'Indicator',k:'Indicator'},{h:'Period',k:'Period'},{h:'Board',n:1,k:'Value on board'},{h:'Source',n:1,k:'Value at source'},{h:'Checked by',k:'Checked by'}],C.checks||[],{empty:'No hand checks recorded yet (Data checks sheet).'})}</div>
-   <div class="card c-6"><h3 style="margin-bottom:12px">AI use</h3>${tableHTML([{h:'Tool',k:'Tool and model'},{h:'Purpose',k:'Purpose'},{h:'Outcome',k:'Outcome'},{h:'How checked',k:'Why / how we checked'}],C.ai||[],{empty:'No AI-use entries yet (AI use sheet).'})}</div>
-   <div class="card c-12"><h2 style="margin-bottom:var(--sp-2)">Development log</h2>${(C.log||[]).length?`<ol class="steps">${C.log.map(l=>`<li><h3>${esc(l.Title||'')} <span class="small" style="font-weight:400">· ${esc(fmtDate(l.Date||''))}</span></h3><p style="margin-top:4px"><span class="small">Issue</span><br>${esc(l['Issue or feedback']||'')}</p><p><span class="small">Changes</span><br>${esc(l['Changes made']||'')}</p><p class="small">Verification: ${esc(l['Verification performed']||'–')} · Effect: ${esc(l['Effect on quality']||'–')}</p></li>`).join('')}</ol>`:empty('No log entries yet.')}</div>
-   <div class="card c-6"><h3 style="margin-bottom:12px">User test</h3>${tableHTML([{h:'Task',k:'Task',keep:1},{h:'Done?',k:'Completed?',keep:1},{h:'Problem',k:'Problem observed'},{h:'Fix',k:'Fix'}],C.usertest||[],{hideEmpty:1})}</div>
-   <div class="card c-6"><h3 style="margin-bottom:12px">Team</h3>${tableHTML([{h:'Member',f:r=>`<span style="white-space:nowrap">${esc(r.Member||'')}</span>`},{h:'Role',k:'Role'},{h:'Owns',k:'Sheets / parts owned'},{h:'Did',k:'What I did (concrete)'}],C.contrib||[],{hideEmpty:1})}</div></div>`}
-
-function renderReadme(){$('t-readme').innerHTML=`<div class="g12"><div class="card c-8"><h2>README</h2>
-  <h3 style="margin-top:var(--sp-3)">What this is</h3><p>A business intelligence board for a privately owned Chinese PV manufacturer deciding where to sell and how much capacity to run. It combines public trade data with news, a validated forecast and three scenarios. Group 7, Business Intelligence and the Global Business Environment, TSE, autumn 2026.</p>
-  <h3 style="margin-top:var(--sp-3)">How to read it</h3><p>${TAG.obs} public data and facts from sources the team read · ${TAG.mod} forecasts, validated on a holdout · ${TAG.ass} inputs the team chose · ${tag('prop','Proposal')} content not yet reviewed. Scenarios carry no probabilities.</p>
-  <h3 style="margin-top:var(--sp-3)">How it is built</h3><p>The team writes all content in <code>content/team.xlsx</code>. <code>scripts/fetch.py</code> downloads the public data into <code>data/</code>; <code>scripts/build.py</code> reads both, computes the forecasts and writes <code>site/data.js</code>. This page is plain HTML with bundled fonts and works offline from the files. Settings you change are kept only in this browser.</p>
-  <h3 style="margin-top:var(--sp-3)">Limits</h3><p>Company figures are illustrative. Signal effects and option scores are judgement. Forecast ranges are indicative. Check any number against the Sources tab before citing it.</p>
-  <div style="margin-top:var(--sp-3)"><button class="link" id="reset">Reset my changes</button></div></div></div>`;
-  $('reset').onclick=()=>{S=fresh();S.tab='readme';try{localStorage.removeItem(KEY)}catch(e){}commit()}}
+/* ================= EVIDENCE AND METHOD ================= */
+function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk],shown=Math.min(48,n),hs=n-s.fc.holdout;
+  const x=s.time.slice(n-shown).concat(s.fc.aheadTime);
+  const mrows=Object.entries(s.fc.methods).map(([k,v])=>({k,...v}));const best=mrows.slice().sort((a,b)=>a.mape-b.mape)[0],bench=s.fc.methods.snaive;
+  const beat=bench&&best.k!=='snaive'?`${esc(best.label)} had the lowest holdout error: ${f2(best.mape)}% against ${f2(bench.mape)}% for the seasonal benchmark.`:'No method beat the seasonal benchmark on the holdout.';
+  const ac=s.annualCheck,am=ac&&ac.methods[mk];
+  const D=C.sources||[],used=D.filter(r=>isDone(r.Status)).length;
+  $('t-evidence').innerHTML=`<nav class="subnav" aria-label="Evidence sections"><a href="#ev-data">Data and forecast check</a><a href="#ev-sources">Sources</a><a href="#ev-method">Method</a><a href="#ev-log">Development log</a><a href="#ev-about">About this board</a></nav>
+  <div class="g12">
+   <div class="card c-12 anchor" id="ev-data"><div class="card-head"><div><h2>${esc(seriesTitle(s))}: history and forecast check</h2>
+      <p class="takeaway">Latest ${fv(s.val[n-1])} ${esc(shortUnit(s.unit))} in ${esc(fmtMonth(s.time[n-1]))}, ${pct(yoy(s))} year on year. The dotted line shows what the method predicted for the ${s.fc.holdout} months it was not allowed to see.</p></div>
+     <div class="controls"><label class="field">Series<select id="c-series">${B.series.map(o=>`<option value="${esc(o.id)}" ${o.id===s.id?'selected':''}>${esc(seriesTitle(o))}</option>`).join('')}</select></label>
+      <label class="field">Method<select id="c-method">${mrows.map(m=>`<option value="${m.k}" ${m.k===mk?'selected':''}>${esc(m.label)}</option>`).join('')}</select></label></div></div>
+    <div id="chart-e"></div>
+    <div class="legend"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>Holdout test</span><span>Shaded: indicative 80% range, not a statistical interval</span></div>
+    <div class="card-foot">${TAG.obs} ${TAG.mod} Source ${esc(s.source_id)}: ${esc(s.note||'see Sources')}. The method chosen here also drives the Outlook forecast.</div></div>
+    <div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Holdout test</h3><p class="takeaway" style="font-size:var(--fs-small)">${beat}</p></div>${TAG.mod}</div>
+     ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===mk?' '+tag('mod','In use'):'')},{h:'MAPE',n:1,f:r=>f2(r.mape)+'%'},{h:'RMSE',n:1,f:r=>fv(r.rmse)}],mrows)}
+     <div class="card-foot">Last ${s.fc.holdout} months (from ${esc(fmtMonth(s.fc.holdoutStart))}) hidden, forecast and scored.</div></div>
+    ${ac?`<div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Check against ${esc(ac.year)} actual</h3><p class="takeaway" style="font-size:var(--fs-small)">${am?`The ${esc(am.label.toLowerCase())} forecast was ${Math.abs(am.error*100).toFixed(1)}% ${am.error>=0?'above':'below'} the published total of ${fv(ac.actual)} ${esc(shortUnit(s.unit))}.`:''}</p></div>${TAG.obs}</div>
+     ${tableHTML([{h:'Method',f:r=>esc(r.label)},{h:'Forecast',n:1,f:r=>fv(r.forecast)},{h:'Error',n:1,f:r=>pct(r.error*100)}],Object.entries(ac.methods).map(([k,v])=>({k,...v})))}
+     <div class="card-foot">${esc(ac.source)}</div></div>`:''}
+   <div class="card c-12 anchor" id="ev-sources"><div class="card-head"><div><h2>Sources</h2><p class="takeaway">${D.length} sources recorded at dataset level, ${used} verified or in use. The board is a dated snapshot; a scheduled GitHub Action refreshes the data monthly and whenever the team workbook changes.</p></div></div>
+    ${tableHTML([{h:'ID',k:'ID',keep:1},{h:'Dataset',f:r=>'<span style="font-weight:500">'+esc(r['Name (exact table or article title)'])+'</span><span class="sub">'+esc(r['Provider / publisher']||'')+(r['URL (table-level link)']&&/^https?:/.test(r['URL (table-level link)'])?` · <a href="${esc(r['URL (table-level link)'].split(' ')[0])}" target="_blank" rel="noopener">link</a>`:'')+'</span>',keep:1,w:'26%'},{h:'Code / filter',f:r=>(r['Dataset code / table']?`<code>${esc(r['Dataset code / table'])}</code>`:'')+`<span class="sub">${esc(r['Variables and filters']||'')}</span>`},{h:'Unit',k:'Unit'},{h:'Coverage',f:r=>esc(r['Coverage (from-to)']||'')+(r['Access date']?`<span class="sub">Accessed ${esc(fmtDate(r['Access date']))}</span>`:'')},{h:'Gaps and flags',k:'Missing values and flags'},{h:'Transformations',k:'Transformations applied'},{h:'Status',f:r=>statusTag(r.Status),keep:1}],D,{empty:'Sources sheet is empty.',hideEmpty:1})}</div>
+   <div class="card c-12 anchor" id="ev-method"><h2 style="margin-bottom:8px">Method</h2>
+    <p>Four simple methods are fitted on each series: seasonal naive (the benchmark: same month last year), 12-month moving average, linear trend, and linear trend plus a monthly seasonal index. The last ${s.fc.holdout} months are hidden, forecast and scored (MAPE, RMSE). The board uses the lowest-error method that beats the benchmark and forecasts ${H} months from all data. The shaded range is ±1.28 × holdout RMSE, widening with the square root of the step: an indicative guide, not a statistical interval. Scenarios shift the volume baseline, the export price and the operating margin by the assumptions on the Outlook tab.</p>
+    <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-3);margin-top:var(--sp-2)">
+     <div><h3 style="margin-bottom:8px">Hand checks against the source</h3>${tableHTML([{h:'Indicator',k:'Indicator'},{h:'Period',k:'Period'},{h:'Board',n:1,k:'Value on board'},{h:'Source',n:1,k:'Value at source'},{h:'Checked by',k:'Checked by'}],C.checks||[],{empty:'No hand checks recorded yet (Data checks sheet).'})}</div>
+     <div><h3 style="margin-bottom:8px">Forecast target options considered</h3>${C.targetDecision?`<p class="small">Team decision: <b>${esc(C.targetDecision)}</b>. ${esc(C.targetReason||'')}</p>`:''}${tableHTML([{h:'ID',k:'ID'},{h:'Indicator',k:'Indicator'},{h:'Frequency / unit',k:'Frequency / unit'}],C.targets||[])}</div></div></div>
+   <div class="card c-12 anchor" id="ev-log"><h2 style="margin-bottom:var(--sp-2)">Development log</h2>${(C.log||[]).length?`<ol class="steps">${C.log.map(l=>`<li><h3>${esc(l.Title||'')} <span class="small" style="font-weight:400">· ${esc(fmtDate(l.Date||''))}</span></h3><p style="margin-top:4px">${esc(l['Issue or feedback']||'')}</p><p class="small"><b style="font-weight:500;color:var(--ink-2)">Changes:</b> ${esc(l['Changes made']||'–')}<br><b style="font-weight:500;color:var(--ink-2)">Verification:</b> ${esc(l['Verification performed']||'–')} · <b style="font-weight:500;color:var(--ink-2)">Effect:</b> ${esc(l['Effect on quality']||'–')}</p></li>`).join('')}</ol>`:empty('No log entries yet.')}
+    <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-3);margin-top:var(--sp-3)">
+     <div><h3 style="margin-bottom:8px">User test</h3>${tableHTML([{h:'Task',k:'Task',keep:1},{h:'Done?',k:'Completed?',keep:1},{h:'Problem',k:'Problem observed'},{h:'Fix',k:'Fix'}],C.usertest||[],{hideEmpty:1})}</div>
+     <div><h3 style="margin-bottom:8px">AI use</h3>${tableHTML([{h:'Tool',k:'Tool and model'},{h:'Purpose',k:'Purpose'},{h:'Outcome',k:'Outcome'},{h:'How checked',k:'Why / how we checked'}],C.ai||[],{empty:'No AI-use entries yet (AI use sheet).'})}</div></div>
+    <h3 style="margin:var(--sp-3) 0 8px">Team</h3>${tableHTML([{h:'Member',f:r=>`<span style="white-space:nowrap">${esc(r.Member||'')}</span>`},{h:'Role',k:'Role'},{h:'Owns',k:'Sheets / parts owned'},{h:'Did',k:'What I did (concrete)'}],C.contrib||[],{hideEmpty:1})}</div>
+   <div class="card c-12 anchor" id="ev-about"><h2 style="margin-bottom:8px">About this board</h2>
+    <p>Group 7, Business Intelligence and the Global Business Environment, Turku School of Economics, autumn 2026. ${TAG.obs} public data and facts from sources the team read · ${TAG.mod} forecasts, validated on a holdout · ${TAG.ass} inputs the team chose · ${tag('prop','Proposal')} content not yet reviewed. Scenarios carry no probabilities.</p>
+    <p>The team writes all content in <code>content/team.xlsx</code>. <code>scripts/fetch.py</code> downloads the public data; <code>scripts/build.py</code> computes the forecasts and writes <code>site/data.js</code>. The page is plain HTML with bundled fonts and works offline. Settings you change stay in this browser.</p>
+    <p class="small">Limits: company figures are illustrative; news effects and option scores are judgement; forecast ranges are indicative. Check any number against Sources before citing it.</p>
+    <button class="link" id="reset" style="margin-top:8px">Reset my changes</button></div>
+  </div>`;
+  chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and ${H}-month forecast`,
+    series:[{name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true},
+      {name:'Holdout test',pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),color:'var(--ink-3)',dash:'1.5 3',w:1.6},
+      {name:'Forecast',label:'Forecast',pts:[[shown-1,s.val[n-1]]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2}],
+    band:{lo:[[shown-1,s.val[n-1]]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,s.val[n-1]]].concat(fc.hi.map((v,i)=>[shown+i,v]))}});
+  $('c-series').onchange=e=>{S.evSeries=e.target.value;commit()};$('c-method').onchange=e=>{S.method=e.target.value;commit()};
+  document.querySelectorAll('.subnav a').forEach(a=>a.onclick=ev=>{ev.preventDefault();const t=$(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth'})});
+  $('reset').onclick=()=>{S=fresh();S.tab='evidence';try{localStorage.removeItem(KEY)}catch(e){}commit()}}
 
 /* ================= shell ================= */
-const R={overview:renderOverview,market:renderMarket,scenarios:renderScenarios,options:renderOptions,signals:renderSignals,frameworks:renderFrameworks,sources:renderSources,method:renderMethod,readme:renderReadme};
+const R={overview:renderOverview,outlook:renderOutlook,strategy:renderStrategy,context:renderContext,evidence:renderEvidence};
 function render(){$('tabs').innerHTML=TABS.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}" aria-controls="t-${k}">${l}</button>`).join('');
-  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;history.replaceState(null,'','#'+S.tab);commit()});
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>go(b.dataset.tab));
   TABS.forEach(([k])=>$('t-'+k).classList.toggle('on',S.tab===k));
   const y=window.scrollY;if(!B.series.length){$('t-'+S.tab).innerHTML=empty('No data. Run scripts/build.py.');return}
-  try{R[S.tab]()}catch(err){$('t-'+S.tab).innerHTML=empty('This view failed to render: '+esc(err.message));console.error(err)}window.scrollTo(0,y)}
+  try{R[S.tab]()}catch(err){$('t-'+S.tab).innerHTML=empty('This view failed to render: '+esc(err.message));console.error(err)}
+  document.querySelectorAll('#t-'+S.tab+' a[href^="#"]').forEach(a=>{const h=a.getAttribute('href').slice(1);if(TABS.some(t=>t[0]===h))a.onclick=ev=>{ev.preventDefault();go(h)}});
+  window.scrollTo(0,y)}
+function go(t){S.tab=t;history.replaceState(null,'','#'+t);commit();window.scrollTo(0,0)}
 function commit(){save();render()}
+function fromHash(){let h=location.hash.slice(1);h=ALIAS[h]||h;return TABS.some(t=>t[0]===h)?h:null}
 header();
-(function(){const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h))S.tab=h;render()})();
-addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h)&&h!==S.tab){S.tab=h;render()}});
+(function(){const h=fromHash();if(h)S.tab=h;render()})();
+addEventListener('hashchange',()=>{const h=fromHash();if(h&&h!==S.tab){S.tab=h;render()}});
 let rz,lw=innerWidth;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(innerWidth!==lw){lw=innerWidth;render()}},150)});
 if(document.fonts)document.fonts.ready.then(()=>render());
 </script>

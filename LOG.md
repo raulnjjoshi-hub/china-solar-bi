@@ -26,4 +26,14 @@ and screenshots so the two can be cross-referenced.
 - **Remaining:** series ends 2024-12, ~2 years before the snapshot. Options: mirror data (partners' imports
   from China, available into 2025) or China Customs monthly releases.
 
-## Stage 3: User test and revision (planned 26-27.11)
+## Stage 3: Condensed structure and UI polish (24-25.11.2026)
+- **Issue:** 9 tabs; forecast, scenarios and news on separate pages made the outlook hard to follow; generic styling.
+- **Changes:** restyle (design tokens, bundled IBM Plex Sans, KPI row, shared chart theme, colour-blind-safe scenario
+  colours), then cut to 5 tabs: Overview, Outlook (forecast + scenarios + news in one view), Strategy, Context, Evidence.
+  Auto-written bottom line and act/prepare/watch summary on Overview.
+- **Verification:** data.js byte-identical; every number shown on the old Market/Scenarios/Signals tabs found on the new
+  Outlook/Evidence tabs (scripted comparison, also after moving a slider). Rendered at 1440/1280/768 px, no errors.
+  Found and fixed a bug: "Candidate - not verified" sources were counted as verified (10 instead of 2-3).
+- **Screenshots:** docs/screenshots/ui-before-*, ui-after-*, v2-*.
+
+## Stage 4: User test and revision (planned 26-27.11)

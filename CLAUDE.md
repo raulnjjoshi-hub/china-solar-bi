@@ -60,6 +60,12 @@ site/{index.html,data.js}  .github/workflows/build.yml  README.md  LOG.md  docs/
 5. Screenshot each version into docs/screenshots/ (v1 prototype, v2 after user test) for the log.
 6. Thursday user test → fixes → retest. Keep LOG.md in sync with the Log sheet.
 
+
+- Board structure (25.11): 5 tabs. Overview (decision strip, KPIs, auto bottom line, scenario bars, act/prepare/watch),
+  Outlook (one chart: forecast + scenarios; scenario cards with sliders; news toggles), Strategy (options, signposts),
+  Context (why it matters, PESTLE, Diamond), Evidence (data + holdout + 2025 check, sources, method, log, about).
+  Old hashes (#market, #scenarios...) redirect. Scenarios always run on the export-volume series.
+
 ## Conventions
 - No external CDNs or fonts (offline backup must work). Plain HTML/CSS/JS.
 - Fonts are bundled in site/fonts (IBM Plex Sans, OFL licence). All design tokens (colours, type scale,
