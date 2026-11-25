@@ -235,13 +235,20 @@ const KEY = 'g7-solar-board-v2';
 function fresh(){return {tab:'overview',evSeries:(B.series[0]||{}).id,method:null,metric:'vol',open:{},
   params:Object.fromEntries(SCEN.map(s=>[s.id,{d:s.d,p:s.p,m:s.m}])),
   m0:C.company?C.company.m0.value:3,share:C.company?C.company.share.value:50,beta:C.company?C.company.beta.value:1,
-  sigOn:Object.fromEntries((C.signals||[]).map(s=>[s.id,true])),
+  sigOn:Object.fromEntries((C.signals||[]).map(s=>[s.id,true])),hypo:[],
   scores:Object.fromEntries((C.options||[]).map(o=>[o.id,{...o.scores}]))}}
 let S = fresh();
 try{const raw=localStorage.getItem(KEY);if(raw){const p=JSON.parse(raw);if(p.built===B.meta.built)S=Object.assign(fresh(),p.s)}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify({built:B.meta.built,s:S}))}catch(e){}}
 const H = (B.meta && B.meta.horizon) || 12;
 
+/* Hypothetical shocks: illustrative tests of how new information moves the scenarios. Not news, not evidence. */
+const HYPO=[
+ {id:'h1',title:'US raises tariffs on Chinese solar products further',pestle:'Political',note:'Illustrative: fewer exports to the US; strongest where trade is already closing.',eff:{A:{d:-1,p:0,m:0},B:{d:-3,p:-1,m:-0.5},C:{d:-0.5,p:0,m:0}}},
+ {id:'h2',title:'Polysilicon price jumps 30%',pestle:'Economic',note:'Illustrative: input cost rises faster than module prices, squeezing margins in every future.',eff:{A:{d:0,p:1,m:-1.5},B:{d:0,p:1,m:-1.5},C:{d:0,p:1,m:-1.5}}},
+ {id:'h3',title:'EU fast-tracks solar permits and relaxes dependence rules',pestle:'Legal',note:'Illustrative: more EU demand for imported modules.',eff:{A:{d:2,p:0,m:0},B:{d:1,p:0,m:0},C:{d:3,p:1,m:0.5}}}];
+function allSignals(){return (C.signals||[]).concat(HYPO.filter(h=>S.hypo.includes(h.id)).map(h=>({...h,kind:'Hypothetical test',publisher:'Hypothetical',hypo:true})))}
+const sigActive=g=>g.hypo?S.hypo.includes(g.id):!!S.sigOn[g.id];
 /* ================= shared theme ================= */
 function scKind(sc,i){const n=(sc.name||'').toLowerCase();return /base/.test(n)?'base':/challeng|pessim|downside/.test(n)?'chal':/optim|upside/.test(n)?'opt':['base','chal','opt'][i%3]}
 const THEME={obs:'var(--ink)',fc:'var(--accent)',band:'var(--accent)',grid:'var(--line-soft)',axis:'var(--line)',muted:'var(--ink-3)',
@@ -329,10 +336,18 @@ function spark(vals,w=104,h=32,color='var(--ink-3)'){if(!vals||vals.length<2)ret
 // Company export volume index = 100 × (V_t / V_0)^beta ;  price index P_t = 100 × (1 + p/100 × t/12)
 // Company revenue index R_t = share × (Vidx × P/100) + (1 − share) × P      (domestic volume held flat)
 // Operating margin mg_t = m0 + m × t/12 ;  operating profit per 100 of today's revenue E_t = R_t × mg_t / 100
-function effects(sid,skip){return (C.signals||[]).filter(s=>S.sigOn[s.id]&&s.id!==skip).reduce((a,s)=>{const e=s.eff[sid]||{};a.d+=+e.d||0;a.p+=+e.p||0;a.m+=+e.m||0;return a},{d:0,p:0,m:0})}
+function effects(sid,skip){return allSignals().filter(s=>sigActive(s)&&s.id!==skip).reduce((a,s)=>{const e=s.eff[sid]||{};a.d+=+e.d||0;a.p+=+e.p||0;a.m+=+e.m||0;return a},{d:0,p:0,m:0})}
 function runScen(sid,withSig=true,skip=null){const s=volSer(),f=s.fc.methods[method(s)].ahead,V0=s.val[s.val.length-1],p=S.params[sid],e=withSig?effects(sid,skip):{d:0,p:0,m:0};
   const d=p.d+e.d,pr=p.p+e.p,mm=p.m+e.m,sh=S.share/100;
   return f.map((b,i)=>{const t=i+1,V=b*(1+d/100*t/12),Vi=100*Math.pow(Math.max(V,1e-9)/V0,S.beta),P=100*(1+pr/100*t/12),R=sh*(Vi*P/100)+(1-sh)*P,mg=S.m0+mm*t/12;return {V,P,R,mg,E:R*mg/100}})}
+// Signpost readings: computed from a board series when the indicator names one and a 12-month change.
+function signpostReading(r){const ind=String(r['Indicator']||'');let s=null;
+  if(/unit value|price/i.test(ind))s=findSer(/unit value/i);else if(/export.*(volume|weight)|exports, volume/i.test(ind))s=volSer();else if(/export.*value/i.test(ind)&&!/unit/i.test(ind))s=B.series.find(x=>/value/i.test(x.label)&&!/unit/i.test(x.label));
+  if(!s||!/12-month change/i.test(ind)||!/^S1$/.test(String(r['Source ID']||'').trim()))return {v:null};
+  const v=yoy(s),th=+r['Threshold'],dir=String(r['Tripped when']||'').toLowerCase();if(v==null||isNaN(th))return {v};
+  return {v,when:s.time[s.time.length-1],trip:dir==='below'?v<th:v>th}}
+const readingCell=r=>{const x=signpostReading(r);return x.v==null?'<span class="small">No data on the board yet</span>':`${pct(x.v)} <span class="small">(${esc(fmtMonth(x.when))})</span>`};
+const stateTag=r=>{const x=signpostReading(r);return x.trip==null?tag('plain','No reading'):x.trip?tag('warn','Tripped'):tag('ok','Not tripped')};
 function verdictOf(o){if(o.bench)return 'bench';const v=SCEN.map(s=>S.scores[o.id][s.id]);if(v.some(x=>x==null))return 'none';return Math.min(...v)>=0?'robust':'contingent'}
 const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Not scored'),robust:tag('ok','Start now'),contingent:tag('warn','Prepare, then trigger')})[k];
 
@@ -360,6 +375,8 @@ function bottomLine(){const v=volSer(),u=findSer(/USD billion|, value$/i)||B.ser
   else P.push(`${v.label}: ${pct(yoy(v))} year on year to ${fmtMonth(v.time[v.time.length-1])}.`);
   P.push(`The baseline forecast points to ${fv(fc.ahead[H-1])} ${shortUnit(v.unit)} a month by ${fmtMonth(v.fc.aheadTime[H-1])} (indicative range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}).`+(out.length?` Across the three scenarios, operating profit after ${H} months ranges from ${f2(out[0].o.E)} (${out[0].x.short.toLowerCase()}) to ${f2(out[out.length-1].o.E)} (${out[out.length-1].x.short.toLowerCase()}) per 100 of today's revenue, against ${f2(S.m0)} today.`:''));
   P.push(rob.length||con.length?`Moves that hold up in every future: ${rob.length?rob.map(o=>o.name.toLowerCase()).join('; '):'none yet'}. Moves to prepare and trigger on a signpost: ${con.length?con.map(o=>o.name.toLowerCase()).join('; '):'none'}.`:`The strategic options have not been scored yet, so no recommendation is shown. Score them under Strategy.`);
+  const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
+  if(trip.length)P.push(`Warning light on: ${trip.map(r=>r['Indicator']+' is '+pct(signpostReading(r).v)+', past the '+r['Threshold']+(r['Unit']||'')+' threshold, pointing to '+(r['Points to']||'?')).join('; ')}.`);
   return P.map(x=>`<p>${esc(x)}</p>`).join('')}
 function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(v)],n=v.val.length,obs=B.series.slice(0,3);
   const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent'),sp=C.signposts||[];
@@ -380,7 +397,7 @@ function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(
     <div class="cols3">
      <div><div class="col-h" style="color:var(--up)">Start now <span class="n">${rob.length}</span></div>${li(rob,o=>`<li>${esc(o.name)}</li>`,'No option scored as robust yet.')}</div>
      <div><div class="col-h" style="color:#8A5A00">Prepare, then trigger <span class="n">${con.length}</span></div>${li(con,o=>`<li>${esc(o.name)}<span class="sub">Act when: ${esc(o.sig||'signpost not set')}</span></li>`,'No contingent option yet.')}</div>
-     <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}</span></li>`,'No signposts yet.')}</div></div>
+     <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])} ${stateTag(r)}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}${signpostReading(r).v!=null?' · now '+pct(signpostReading(r).v):''}</span></li>`,'No signposts yet.')}</div></div>
     <p style="margin:var(--sp-2) 0 0"><a href="#strategy">Open the options and signposts →</a></p></div>
   </div>`}
 
@@ -408,12 +425,12 @@ function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.me
     <details class="adj" data-open="${sc.id}" ${S.open[sc.id]?'open':''}><summary>Adjust assumptions ${TAG.ass}</summary>
      ${meta.map(([k,l,u,a,b,st])=>`<div class="srow"><div class="lbl">${l}<span>${u}${e[k]?' · news adds '+sgn(e[k]):''}</span></div><input type="range" data-p="${sc.id}.${k}" min="${a}" max="${b}" step="${st}" value="${S.params[sc.id][k]}" aria-label="${esc(sc.short+' scenario: '+l)}"><span class="val">${S.params[sc.id][k]}</span></div>`).join('')}
      ${sc.why?`<p class="small" style="margin-top:12px">${esc(sc.why)} ${sc.src?'('+esc(sc.src)+')':''}</p>`:''}</details></div>`}).join('');
-  const G=C.signals||[];
-  const news=G.map(g=>{const c=SCEN.map(sc=>S.sigOn[g.id]?runScen(sc.id)[H-1].E-runScen(sc.id,true,g.id)[H-1].E:null);
-    return `<div class="news"><input type="checkbox" data-on="${esc(g.id)}" ${S.sigOn[g.id]?'checked':''} aria-label="Apply: ${esc(g.title)}" style="margin-top:3px">
+  const G=allSignals();
+  const news=G.map(g=>{const c=SCEN.map(sc=>sigActive(g)?runScen(sc.id)[H-1].E-runScen(sc.id,true,g.id)[H-1].E:null);
+    return `<div class="news">${g.hypo?`<button class="link" data-unhypo="${g.id}" aria-label="Remove hypothetical: ${esc(g.title)}" style="padding:0 7px;line-height:20px">×</button>`:`<input type="checkbox" data-on="${esc(g.id)}" ${S.sigOn[g.id]?'checked':''} aria-label="Apply: ${esc(g.title)}" style="margin-top:3px">`}
      <div><div class="title">${g.url?`<a href="${esc(g.url)}" target="_blank" rel="noopener" style="color:var(--ink)">${esc(g.title)}</a>`:esc(g.title)}</div>
       <div class="small">${esc(g.publisher)}${g.date?' · '+esc(g.date):''} · ${esc(g.pestle)} ${/hypo/i.test(g.kind)?tag('ass','Hypothetical'):''} ${statusTag(g.status)}</div>
-      <details class="more" style="margin-top:4px"><summary>Fact and our judgement</summary><p class="small" style="margin-top:6px;color:var(--ink-2)"><b style="font-weight:600">Fact.</b> ${esc(g.fact||'–')}<br><b style="font-weight:600">Judgement.</b> ${esc(g.note||'–')}</p></details></div>
+      ${g.hypo?`<p class="small" style="margin:4px 0 0">${esc(g.note)}</p>`:`<details class="more" style="margin-top:4px"><summary>Fact and our judgement</summary><p class="small" style="margin-top:6px;color:var(--ink-2)"><b style="font-weight:600">Fact.</b> ${esc(g.fact||'–')}<br><b style="font-weight:600">Judgement.</b> ${esc(g.note||'–')}</p></details>`}</div>
      <div class="eff">${SCEN.map((sc,i)=>`<span>${esc(sc.short.slice(0,4))}. <b>${c[i]==null?'off':sgn(c[i],2)}</b></span>`).join('')}</div></div>`}).join('');
   const U=C.uncertainties||[],ci=C.company||{};
   const cs=(k,o)=>o?`<div class="srow"><div class="lbl">${esc(o.label)}<span>${esc(o.unit)}</span></div><input type="range" data-g="${k}" min="${o.min}" max="${o.max}" step="${k==='beta'?0.1:0.5}" value="${S[k]}" aria-label="${esc(o.label)}"><span class="val">${S[k]}</span></div>`:'';
@@ -424,7 +441,9 @@ function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.me
     <div class="card-foot">${vol?`${TAG.obs} Actual, UN Comtrade. ${TAG.mod} Baseline: ${esc(fc.label.toLowerCase())}, shaded indicative range. `:''}${TAG.out} Scenario lines apply each scenario's assumptions and the news below. Possible futures, not predictions; no probabilities.</div></div>
    ${cards}
    <div class="card c-8"><div class="card-head"><div><h3>News that shifts the scenarios</h3><p class="takeaway" style="font-size:var(--fs-small)">Switch an item off to see its effect. Numbers show the change in operating profit per 100 of today's revenue after ${H} months.</p></div></div>
-    ${news||empty('No news items yet (Signals sheet).')}</div>
+    ${news||empty('No news items yet (Signals sheet).')}
+    <div style="border-top:1px solid var(--line);margin-top:var(--sp-2);padding-top:var(--sp-2)"><div class="small" style="margin-bottom:8px"><b style="font-weight:600;color:var(--ink-2)">Test a hypothetical shock</b> · adds an illustrative item, clearly labelled, so you can watch the scenarios react. Not news.</div>
+     <div class="controls">${HYPO.filter(h=>!S.hypo.includes(h.id)).map(h=>`<button class="link" data-hypo="${h.id}">+ ${esc(h.title)}</button>`).join('')||'<span class="small">All three tests applied.</span>'}</div></div></div>
    <div class="stack c-4">
     <div class="card"><h3 style="margin-bottom:8px">Key uncertainties</h3>${U.length?`<ul class="plain-list">${U.map(u=>`<li>${esc(u['Uncertainty'])}<span class="sub">${esc(u['One end'])} ↔ ${esc(u['Other end'])}</span></li>`).join('')}</ul>`:empty('None recorded.')}</div>
     <div class="card"><details class="more" data-open="company" ${S.open.company?'open':''}><summary>Company inputs (illustrative)</summary>${cs('m0',ci.m0)}${cs('share',ci.share)}${cs('beta',ci.beta)}<p class="small" style="margin-top:12px">Not real company data.</p></details>
@@ -435,6 +454,8 @@ function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   document.querySelectorAll('[data-metric]').forEach(b=>b.onclick=()=>{S.metric=b.dataset.metric;commit()});
   document.querySelectorAll('details[data-open]').forEach(d=>d.ontoggle=()=>{S.open[d.dataset.open]=d.open;save()});
   document.querySelectorAll('[data-on]').forEach(e=>e.onchange=()=>{S.sigOn[e.dataset.on]=e.checked;commit()});
+  document.querySelectorAll('[data-hypo]').forEach(e=>e.onclick=()=>{S.hypo.push(e.dataset.hypo);commit()});
+  document.querySelectorAll('[data-unhypo]').forEach(e=>e.onclick=()=>{S.hypo=S.hypo.filter(x=>x!==e.dataset.unhypo);commit()});
   document.querySelectorAll('input[type=range]').forEach(r=>{r.oninput=()=>r.parentElement.querySelector('.val').textContent=r.value;
     r.onchange=()=>{if(r.dataset.p){const [a,k]=r.dataset.p.split('.');S.params[a][k]=+r.value}else S[r.dataset.g]=+r.value;commit()}})}
 
@@ -449,7 +470,7 @@ function renderStrategy(){const O=C.options||[];const v=O.map(verdictOf),cnt=k=>
    ${O.length?`<div class="tablewrap"><table><thead><tr><th>Option</th>${SCEN.map(s=>`<th class="n" style="color:${s.ink}">${esc(s.short)}</th>`).join('')}<th>Verdict</th><th>Signpost to act</th></tr></thead><tbody>${rows}</tbody></table></div>`:empty('No options yet (Options sheet).')}</div>
    <div class="card c-12"><div class="card-head"><div><h2>Signposts</h2><p class="takeaway">Indicators with thresholds. When one is crossed, it points to the future that is arriving and the action to take.</p></div></div>
    ${proposalNote(sp)}
-   ${tableHTML([{h:'Indicator',f:r=>esc(r['Indicator'])+rowStatus(r,!allProposal(sp))},{h:'Threshold',n:1,f:r=>esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+' '+esc(r['Unit']||'')},{h:'Reading',n:1,f:()=>'<span class="small">Not linked yet</span>'},{h:'Points to',k:'Points to'},{h:'Action if tripped',k:'Action if tripped'}],sp,{empty:'No signposts yet (Signposts sheet).'})}</div></div>`;
+   ${tableHTML([{h:'Indicator',f:r=>esc(r['Indicator'])+rowStatus(r,!allProposal(sp))},{h:'Threshold',n:1,f:r=>esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+' '+esc(r['Unit']||'')},{h:'Reading',n:1,f:readingCell},{h:'State',f:stateTag},{h:'Points to',k:'Points to'},{h:'Action if tripped',k:'Action if tripped'}],sp,{empty:'No signposts yet (Signposts sheet).'})}</div></div>`;
   document.querySelectorAll('[data-score]').forEach(e=>e.onchange=()=>{const [o,s]=e.dataset.score.split('.');S.scores[o][s]=e.value===''?null:+e.value;commit()})}
 
 /* ================= CONTEXT ================= */
@@ -468,7 +489,7 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   const beat=bench&&best.k!=='snaive'?`${esc(best.label)} had the lowest holdout error: ${f2(best.mape)}% against ${f2(bench.mape)}% for the seasonal benchmark.`:'No method beat the seasonal benchmark on the holdout.';
   const ac=s.annualCheck,am=ac&&ac.methods[mk];
   const D=C.sources||[],used=D.filter(r=>isDone(r.Status)).length;
-  $('t-evidence').innerHTML=`<nav class="subnav" aria-label="Evidence sections"><a href="#ev-data">Data and forecast check</a><a href="#ev-sources">Sources</a><a href="#ev-method">Method</a><a href="#ev-log">Development log</a><a href="#ev-about">About this board</a></nav>
+  $('t-evidence').innerHTML=`<nav class="subnav" aria-label="Evidence sections"><a href="#ev-data">Data and forecast check</a><a href="#ev-sources">Sources</a><a href="#ev-method">Method</a><a href="#ev-log">Development log</a><a href="#ev-ai">AI use and prompts</a><a href="#ev-limits">Limits</a><a href="#ev-about">About</a></nav>
   <div class="g12">
    <div class="card c-12 anchor" id="ev-data"><div class="card-head"><div><h2>${esc(seriesTitle(s))}: history and forecast check</h2>
       <p class="takeaway">Latest ${fv(s.val[n-1])} ${esc(shortUnit(s.unit))} in ${esc(fmtMonth(s.time[n-1]))}, ${pct(yoy(s))} year on year. The dotted line shows what the method predicted for the ${s.fc.holdout} months it was not allowed to see.</p></div>
@@ -495,10 +516,15 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
      <div><h3 style="margin-bottom:8px">User test</h3>${tableHTML([{h:'Task',k:'Task',keep:1},{h:'Done?',k:'Completed?',keep:1},{h:'Problem',k:'Problem observed'},{h:'Fix',k:'Fix'}],C.usertest||[],{hideEmpty:1})}</div>
      <div><h3 style="margin-bottom:8px">AI use</h3>${tableHTML([{h:'Tool',k:'Tool and model'},{h:'Purpose',k:'Purpose'},{h:'Outcome',k:'Outcome'},{h:'How checked',k:'Why / how we checked'}],C.ai||[],{empty:'No AI-use entries yet (AI use sheet).'})}</div></div>
     <h3 style="margin:var(--sp-3) 0 8px">Team</h3>${tableHTML([{h:'Member',f:r=>`<span style="white-space:nowrap">${esc(r.Member||'')}</span>`},{h:'Role',k:'Role'},{h:'Owns',k:'Sheets / parts owned'},{h:'Did',k:'What I did (concrete)'}],C.contrib||[],{hideEmpty:1})}</div>
+   <div class="card c-12 anchor" id="ev-ai"><div class="card-head"><div><h2>AI use and prompts</h2><p class="takeaway">Built with Claude (Anthropic) as a coding and analysis assistant. Selected moments where an AI output was questioned, corrected or rejected; no raw transcripts.</p></div></div>
+    ${tableHTML([{h:'Stage',k:'s'},{h:'What we asked',k:'q'},{h:'What came back',k:'a'},{h:'Outcome',f:r=>tag(r.o==='Rejected'?'warn':r.o==='Accepted'?'ok':'mod',r.o)},{h:'How we checked',k:'c'}],AI_LOG)}
+    <h3 style="margin:var(--sp-3) 0 8px">Prompts to extend the board</h3>
+    <ul class="plain-list">${PROMPTS.map(p=>`<li><b style="font-weight:500">${esc(p[0])}</b><span class="sub">${esc(p[1])}</span></li>`).join('')}</ul></div>
+   <div class="card c-12 anchor" id="ev-limits"><h2 style="margin-bottom:8px">What this board cannot tell you</h2>
+    <ul class="plain-list">${LIMITS.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
    <div class="card c-12 anchor" id="ev-about"><h2 style="margin-bottom:8px">About this board</h2>
     <p>Group 7, Business Intelligence and the Global Business Environment, Turku School of Economics, autumn 2026. ${TAG.obs} public data and facts from sources the team read · ${TAG.mod} forecasts, validated on a holdout · ${TAG.ass} inputs the team chose · ${tag('prop','Proposal')} content not yet reviewed. Scenarios carry no probabilities.</p>
     <p>The team writes all content in <code>content/team.xlsx</code>. <code>scripts/fetch.py</code> downloads the public data; <code>scripts/build.py</code> computes the forecasts and writes <code>site/data.js</code>. The page is plain HTML with bundled fonts and works offline. Settings you change stay in this browser.</p>
-    <p class="small">Limits: company figures are illustrative; news effects and option scores are judgement; forecast ranges are indicative. Check any number against Sources before citing it.</p>
     <button class="link" id="reset" style="margin-top:8px">Reset my changes</button></div>
   </div>`;
   chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and ${H}-month forecast`,
@@ -510,6 +536,28 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   document.querySelectorAll('.subnav a').forEach(a=>a.onclick=ev=>{ev.preventDefault();const t=$(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth'})});
   $('reset').onclick=()=>{S=fresh();S.tab='evidence';try{localStorage.removeItem(KEY)}catch(e){}commit()}}
 
+const AI_LOG=[
+ {s:'Brief, 23.11',q:'Which monthly indicator can we forecast for a Chinese PV manufacturer?',a:'Five candidates with pros and cons; recommended Comtrade exports',o:'Accepted',c:'Team kept the choice open in the workbook; tested data availability before committing'},
+ {s:'Workbook, 23.11',q:'Generate the team workbook template',a:'18-sheet workbook',o:'Revised',c:'Read-back check found Options text shifted one column; generator fixed before team use'},
+ {s:'Scenarios, 24.11',q:'Review the team\'s base / challenging / optimistic scenarios',a:'Proposed replacing base with a "strong demand, closed doors" quadrant',o:'Rejected',c:'Team kept its own three scenarios; added a note that base is not the most likely future'},
+ {s:'Fact check, 24.11',q:'Check the figures in the team\'s scenario text against the cited pages',a:'Plan period 2026-2031 is wrong (2026-2030); 4,945 GW and 0.8 EJ not found on the cited pages',o:'Accepted',c:'Opened gov.cn and IEA pages; corrected the period, figures to be re-sourced'},
+ {s:'Data, 24.11',q:'Download China monthly PV exports 2022 to date from Comtrade',a:'Monthly data only to Dec 2024; 2025 annual total exists',o:'Accepted',c:'Browser and file checksums identical; monthly 2024 sum equals 2024 annual total (0.00%)'},
+ {s:'Forecast, 24.11',q:'Validate the forecast beyond the holdout',a:'Compared each method\'s 2025 total with the published annual figure',o:'Accepted',c:'Volume trend within 0.1%; value trend off by -21% because price falls slowed'},
+ {s:'Design, 24.11',q:'Restyle the board without changing any numbers',a:'New design; MAPE shown with one decimal instead of two',o:'Revised',c:'Scripted comparison of every displayed number old vs new; precision restored'},
+ {s:'Design, 24.11',q:'Count verified sources',a:'Said 10 of 10 verified',o:'Revised',c:'"Candidate - not verified" matched the word "verified"; count fixed to 3'}];
+const PROMPTS=[
+ ['Add a news signal','Read this article: <URL>. Quote only the facts it states, with the date. Propose effects on volume, price and margin for each scenario and explain each as a judgement.'],
+ ['Add a destination split','Fetch China PV exports by partner from Comtrade and add EU, US, India and rest-of-world shares, so the "share of exports to the EU and US" signpost gets a reading.'],
+ ['Refresh the data','Run the workflow manually (Actions > Run workflow) and check the new snapshot against the Comtrade website for two months.'],
+ ['Stress the scenarios','Find the volume, price and margin assumptions at which the base scenario becomes worse than the challenging one, and report which signposts would show us moving there.'],
+ ['Check the work','Act as a sceptical reviewer: recompute the holdout errors independently, list every claim that rests on judgement, and say which assumption changes the result most.']];
+const LIMITS=[
+ 'Monthly data ends December 2024. The forecast covers a period that has already passed; it is checked against the published 2025 annual total, not against monthly figures.',
+ 'Export figures cover all Chinese exporters, not one company. Company revenue and profit are illustrative and show sensitivity, not real results.',
+ 'There is no split by destination yet, so the board cannot show which export markets are growing.',
+ 'News effects, scenario assumptions and option scores are team judgement. Proposals are marked until the team has reviewed them.',
+ 'Forecast methods are deliberately simple. The shaded range is indicative, not a statistical confidence interval.',
+ 'Scenarios are possible futures, not predictions, and carry no probabilities.'];
 /* ================= shell ================= */
 const R={overview:renderOverview,outlook:renderOutlook,strategy:renderStrategy,context:renderContext,evidence:renderEvidence};
 function render(){$('tabs').innerHTML=TABS.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}" aria-controls="t-${k}">${l}</button>`).join('');
