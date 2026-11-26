@@ -178,8 +178,10 @@ details.more summary{cursor:pointer;color:var(--ink-2);font-size:var(--fs-small)
 .strip .k{font-size:var(--fs-micro);font-weight:500;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
 .strip .v{font-size:var(--fs-body);color:var(--ink)}
 @media(max-width:800px){.strip{grid-template-columns:1fr}}
-.bottomline p{font-size:15px;line-height:1.65;max-width:none;margin-bottom:12px;color:var(--ink)}
+.bottomline p{font-size:15px;line-height:1.65;max-width:72ch;margin-bottom:8px;color:var(--ink)}
+.bottomline h3:first-of-type{margin-top:8px!important}
 .cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.stack .cols3{grid-template-columns:1fr;gap:var(--sp-2)}
 @media(max-width:800px){.cols3{grid-template-columns:1fr}}
 .col-h{display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:8px}
 .col-h .n{font-size:var(--fs-small);color:var(--ink-3);font-weight:400}
@@ -378,6 +380,26 @@ function bottomLine(){const v=volSer(),u=findSer(/USD billion|, value$/i)||B.ser
   const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
   if(trip.length)P.push(`Warning light on: ${trip.map(r=>r['Indicator']+' is '+pct(signpostReading(r).v)+', past the '+r['Threshold']+(r['Unit']||'')+' threshold, pointing to '+(r['Points to']||'?')).join('; ')}.`);
   return P.map(x=>`<p>${esc(x)}</p>`).join('')}
+function memo(){const v=volSer(),n=v.val.length,fc=v.fc.methods[method(v)],p=findSer(/unit value/i);
+  const byYear=y=>{const ks=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t.startsWith(y));if(!ks.length)return null;const pk=ks.reduce((a,b)=>b[1]>a[1]?b:a);
+    const w=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t===(+y-1)+'-12'||t===y+'-01'||t===y+'-02').map(x=>x[1]);return w.length?{pk,ratio:pk[1]/(w.reduce((a,b)=>a+b,0)/w.length)}:null};
+  const yrs=[...new Set(v.time.map(t=>t.slice(0,4)))].slice(-2).map(byYear).filter(Boolean);
+  const peakMon=yrs.length&&yrs.every(y=>y.pk[0].slice(5)===yrs[0].pk[0].slice(5))?['January','February','March','April','May','June','July','August','September','October','November','December'][+yrs[0].pk[0].slice(5)-1]:null;
+  const rLo=Math.min(...yrs.map(y=>y.ratio)),rHi=Math.max(...yrs.map(y=>y.ratio));
+  const fpk=fc.ahead.reduce((a,b,i)=>b>a.v?{v:b,i}:a,{v:-1,i:0});
+  const sp=Object.fromEntries(SCEN.map(sc=>[sc.kind,{sc,pk:Math.max(...runScen(sc.id).map(o=>o.V))}]));
+  const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
+  const u=x=>fv(x)+' kt/month';
+  const H3=t=>`<h3 style="margin:var(--sp-3) 0 6px">${t}</h3>`,P=t=>`<p>${t}</p>`;
+  return H3('The decision')+P('The need for solar power has grown rapidly over the last two decades. If the trend continues, the need for solar panels will keep rising. Management has to decide how to meet the increasing need while preparing for sudden changes.')+
+   H3('What we know')+P(`Chinese PV exports, our monthly indicator of industry output, ${peakMon?`peak in ${peakMon}`:'peak in spring'}: in ${yrs.map(y=>y.pk[0].slice(0,4)).join(' and ')} the peak was ${f1(rLo)}–${f1(rHi)} times the winter level. In ${esc(fmtMonth(v.time[n-1]))} volume was ${pct(yoy(v))} on a year earlier${p?`, while the export price per kg was ${pct(yoy(p))}: more panels are sold for less money`:''}. If the trend continues, the next peak reaches ${u(fpk.v)} in ${esc(fmtMonth(v.fc.aheadTime[fpk.i]))}.`)+
+   H3('The three possibilities')+
+   (sp.base?P(`<b style="font-weight:600;color:var(--sc-base)">Base.</b> Current trends continue, so demand for PV cells reaches a new high in the coming year. Combined with China's goal of reducing carbon further, this means steady growth for PV manufacturers. On the board's current settings the peak reaches ${u(sp.base.pk)}.`):'')+
+   (sp.opt?P(`<b style="font-weight:600;color:var(--sc-opt-ink)">Optimistic.</b> China strengthens its lead in PV manufacturing, and high fuel prices in Europe push demand towards renewable energy, including solar. The peak reaches ${u(sp.opt.pk)}.`):'')+
+   (sp.chal?P(`<b style="font-weight:600;color:var(--sc-chal)">Challenging.</b> Demand for renewable energy grows more slowly as new data centres need steady power such as nuclear, and fossil fuel prices fall if the war in Ukraine, Iran or both ends. The peak reaches ${u(sp.chal.pk)}.`):'')+
+   H3('The options')+`<ul class="plain-list" style="font-size:15px"><li>Diversify sales to emerging markets such as the Middle East and Latin America.</li><li>Build assembly capacity outside China to deal with tariffs and local-content rules.</li><li>Cut or pause marginal capacity instead of fighting on price.</li></ul>`+
+   H3('What we would do')+P('Prepare to expand into emerging markets in case demand from Europe and North America falls or stays flat. If demand drops sharply, stop expanding capacity immediately. If cell output does not change, shift to higher-efficiency production lines.')+
+   (trip.length?P(`<span class="small" style="color:var(--ink-2)">Signpost status now: ${trip.map(r=>esc(r['Indicator'])+' at '+pct(signpostReading(r).v)+', past the '+esc(r['Threshold'])+esc(r['Unit']||'')+' threshold').join('; ')}.</span>`):'')}
 function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(v)],n=v.val.length,obs=B.series.slice(0,3);
   const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent'),sp=C.signposts||[];
   const li=(arr,f,none)=>arr.length?`<ul class="plain-list">${arr.map(f).join('')}</ul>`:`<p class="small">${none}</p>`;
@@ -391,14 +413,14 @@ function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(
     <div class="value">${fv(fc.ahead[H-1])}<span class="unit">${esc(shortUnit(v.unit))}</span></div>
     <div class="small">${esc(fmtMonth(v.fc.aheadTime[H-1]))}, range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}</div>
     <div class="row">${deltaHTML((fc.ahead[H-1]/v.val[n-1]-1)*100,'vs latest')}${spark(v.val.slice(-12).concat(fc.ahead),104,32,'var(--accent)')}</div></div>
-   <div class="card c-8 bottomline"><div class="card-head"><div><h2>Bottom line</h2><p class="small" style="margin-top:2px">Written automatically from the data and the current settings.</p></div></div>${bottomLine()}</div>
-   <div class="card c-4"><div class="card-head"><div><h2>Scenario outlook</h2></div>${TAG.out}</div>${scenarioBars()}<p style="margin:12px 0 0"><a href="#outlook">Explore the scenarios →</a></p></div>
-   <div class="card c-12"><div class="card-head"><div><h2>What to do</h2><p class="takeaway">From the options scored under Strategy and the signposts that tell us when to act.</p></div></div>
+   <div class="card c-8 bottomline"><div class="card-head"><div><h2>Management memo</h2><p class="small" style="margin-top:2px">Team narrative. Numbers update from the data and the current scenario settings.</p></div>${TAG.ass}</div>${memo()}</div>
+   <div class="stack c-4"><div class="card"><div class="card-head"><div><h2>Scenario outlook</h2></div>${TAG.out}</div>${scenarioBars()}<p style="margin:12px 0 0"><a href="#outlook">Explore the scenarios →</a></p></div>
+   <div class="card"><div class="card-head"><div><h2>What to do</h2><p class="takeaway">From the options scored under Strategy and the signposts that tell us when to act.</p></div></div>
     <div class="cols3">
      <div><div class="col-h" style="color:var(--up)">Start now <span class="n">${rob.length}</span></div>${li(rob,o=>`<li>${esc(o.name)}</li>`,'No option scored as robust yet.')}</div>
      <div><div class="col-h" style="color:#8A5A00">Prepare, then trigger <span class="n">${con.length}</span></div>${li(con,o=>`<li>${esc(o.name)}<span class="sub">Act when: ${esc(o.sig||'signpost not set')}</span></li>`,'No contingent option yet.')}</div>
      <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])} ${stateTag(r)}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}${signpostReading(r).v!=null?' · now '+pct(signpostReading(r).v):''}</span></li>`,'No signposts yet.')}</div></div>
-    <p style="margin:var(--sp-2) 0 0"><a href="#strategy">Open the options and signposts →</a></p></div>
+    <p style="margin:var(--sp-2) 0 0"><a href="#strategy">Open the options and signposts →</a></p></div></div>
   </div>`}
 
 /* ================= OUTLOOK (forecast + scenarios + signals) ================= */
