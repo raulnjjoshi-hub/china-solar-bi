@@ -353,7 +353,7 @@ const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Not scored
 
 /* ================= header ================= */
 function header(){const b=C.brief||{},s=volSer();
-  $('h-sub').textContent=`For the leadership of ${(b['Intended user']||'a privately owned Chinese PV manufacturer').replace(/^A /,'a ').replace(/ \(strategy and sales leadership\)/,'')}.`;
+  $('h-sub').textContent=`For the leadership of ${(b['Intended user']||'a privately owned Chinese PV manufacturer').replace(/^A /,'a ').replace(/ \([^)]*\)$/,'')}.`;
   const src=B.meta.demo?'<b style="color:var(--down)">Demo data, not evidence</b>':'Source <b>UN Comtrade</b>, HS 854142 + 854143';
   $('meta').innerHTML=`${src}<br>${s?`Data to <b>${esc(fmtMonth(s.time[s.time.length-1]))}</b> · `:''}Updated <b>${esc(fmtDate(B.meta.snapshot||B.meta.built))}</b>`;
   $('demo').innerHTML=B.meta.demo?'<div class="note demo"><b>Demo mode.</b> Synthetic placeholder series for layout testing. Real data replaces them once data/processed/catalog.json exists.</div>':''}
@@ -553,6 +553,7 @@ const PROMPTS=[
  ['Check the work','Act as a sceptical reviewer: recompute the holdout errors independently, list every claim that rests on judgement, and say which assumption changes the result most.']];
 const LIMITS=[
  'Monthly data ends December 2024. The forecast covers a period that has already passed; it is checked against the published 2025 annual total, not against monthly figures.',
+ 'The company sells mainly in China, but no monthly data on domestic panel sales is public. China\'s monthly PV exports are used as the indicator of industry output, prices and the export opportunity.',
  'Export figures cover all Chinese exporters, not one company. Company revenue and profit are illustrative and show sensitivity, not real results.',
  'There is no split by destination yet, so the board cannot show which export markets are growing.',
  'News effects, scenario assumptions and option scores are team judgement. Proposals are marked until the team has reviewed them.',

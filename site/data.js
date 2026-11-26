@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-24 12:46",
+  "built": "2026-11-26 12:47",
   "demo": false,
   "snapshot": "2026-11-24",
   "horizon": 12
@@ -10,9 +10,9 @@ window.BOARD = {
    "Country": "China",
    "Industry": "Renewable energy, focus on solar PV manufacturing (cells and modules)",
    "Group": "Group 7",
-   "Intended user": "A privately owned, export-oriented Chinese PV cell and module manufacturer (strategy and sales leadership)",
-   "Decision": "Which export markets to prioritise, and how much capacity to run, over the next 12-24 months",
-   "Key question": "Where will demand for Chinese PV exports come from, at what prices, and which moves are safe under every plausible future?",
+   "Intended user": "A privately owned Chinese solar panel manufacturer that today sells to Chinese companies and private individuals (management team)",
+   "Decision": "How to meet growing demand while preparing for sudden changes: how much capacity to run, and whether to expand into export markets",
+   "Key question": "Will demand for Chinese solar panels keep growing, at what prices, and which moves (export expansion, capacity) are safe in every plausible future?",
    "Forecast horizon": "12 months ahead, monthly data",
    "Scenario horizon": "To 2030",
    "Why this context matters": null,
@@ -516,12 +516,12 @@ window.BOARD = {
     "status": "Proposal"
    },
    "share": {
-    "value": 50.0,
+    "value": 20.0,
     "min": 0.0,
     "max": 100.0,
     "label": "Share of the company's sales that are exports",
     "unit": "%",
-    "basis": "Illustrative.",
+    "basis": "Illustrative. The company sells mainly in China today; 20% stands for early export sales. Team to set.",
     "status": "Proposal"
    },
    "beta": {
@@ -530,7 +530,7 @@ window.BOARD = {
     "max": 2.0,
     "label": "Company volume sensitivity to market export volume",
     "unit": "x",
-    "basis": "1.0 = company moves with the market.",
+    "basis": "1.0 = the company's volume moves with China's PV export volume, used as the monthly indicator of industry output (no monthly domestic sales data).",
     "status": "Proposal"
    }
   },
