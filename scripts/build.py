@@ -29,7 +29,8 @@ CONTENT = ROOT / "content" / "team.xlsx"
 PROC = ROOT / "data" / "processed"
 OUT = ROOT / "site" / "data.js"
 
-HORIZON = 12        # months ahead
+TARGET_END = "2027-12"  # forecast to the end of next year (decision horizon)
+FIT_WINDOW = 48     # trend methods are fitted on the last 4 years (market structure changed after 2021)
 HOLDOUT = 12        # months hidden for validation
 Z80 = 1.2816        # indicative 80% band multiplier
 
@@ -163,7 +164,7 @@ def read_series_real() -> list[dict] | None:
                 val.append(float(row["value"]))
                 flag.append(row.get("flag") or "")
         time, val, flag = fill_gaps(time, val, flag)
-        out.append({**meta, "time": time, "val": val, "flag": flag})
+        out.append({**meta, "time": time, "val": val, "flag": flag, "role": meta.get("role", "series")})
     return out
 
 
@@ -240,6 +241,7 @@ def f_ma12(y, h):
 
 
 def f_trend(y, h):
+    y = y[-FIT_WINDOW:]
     a, b = linfit(y)
     n = len(y)
     return [a + b * (n + k) for k in range(1, h + 1)]
@@ -247,6 +249,7 @@ def f_trend(y, h):
 
 def f_trend_season(y, h):
     """Linear trend + additive monthly seasonal index from detrended residuals (needs >= 24 points)."""
+    y = y[-FIT_WINDOW:]
     a, b = linfit(y)
     n = len(y)
     resid = [y[i] - (a + b * (i + 1)) for i in range(n)]
@@ -264,9 +267,15 @@ METHODS = {
 }
 
 
+def months_between(a: str, b: str) -> int:
+    ya, ma = map(int, a.split("-")); yb, mb = map(int, b.split("-"))
+    return (yb - ya) * 12 + (mb - ma)
+
+
 def forecast_series(s: dict) -> dict:
     y = s["val"]
     n = len(y)
+    HORIZON = max(12, months_between(s["time"][-1], TARGET_END))
     H = HOLDOUT if n >= 36 else max(6, n // 4)
     train, test = y[:-H], y[-H:]
     res = {}
@@ -285,7 +294,7 @@ def forecast_series(s: dict) -> dict:
     bench = res.get("snaive", {}).get("mape", float("inf"))
     better = [k for k in res if k != "snaive" and res[k]["mape"] < bench]
     default = min(better, key=lambda k: res[k]["mape"]) if better else "snaive"
-    return {"holdout": H, "holdoutStart": s["time"][-H], "methods": res, "default": default,
+    return {"holdout": H, "holdoutStart": s["time"][-H], "methods": res, "default": default, "horizon": HORIZON, "fitWindow": FIT_WINDOW,
             "aheadTime": [add_months(s["time"][-1], k) for k in range(1, HORIZON + 1)]}
 
 
@@ -309,6 +318,41 @@ def add_annual_check(series):
                                             "error": sum(m["ahead"]) / actual - 1} for k, m in s["fc"]["methods"].items()}}
 
 
+def crosscheck(series):
+    """Ember (China customs) vs UN Comtrade (China's report to the UN) for overlapping months and 2025."""
+    kg = next((s for s in series if s["id"] == "cn_pv_exports_kg"), None)
+    usd = next((s for s in series if s["id"] == "cn_pv_exports_usd"), None)
+    raw = ROOT / "data" / "raw" / "comtrade"
+    mf, af = raw / "2026-11-24.json", raw / "annual_2026-11-24.json"
+    if not (kg and usd and mf.exists()):
+        return None
+    rows = json.loads(mf.read_text(encoding="utf-8"))
+    ct = {}
+    for r in rows:
+        p = f"{r['period'][:4]}-{r['period'][4:]}"
+        o = ct.setdefault(p, {"kg": 0, "usd": 0}); o["kg"] += r["netWgt"] / 1e6; o["usd"] += r["primaryValue"] / 1e9
+    ek, eu = dict(zip(kg["time"], kg["val"])), dict(zip(usd["time"], usd["val"]))
+    months = sorted(p for p in ct if p in ek)
+    diff = lambda a, b: (a / b - 1) * 100
+    out = {"months": len(months), "from": months[0], "to": months[-1],
+           "kg": {"ember": sum(ek[p] for p in months), "comtrade": sum(ct[p]["kg"] for p in months)},
+           "usd": {"ember": sum(eu[p] for p in months), "comtrade": sum(ct[p]["usd"] for p in months)},
+           "maxMonthlyDiffPct": max(max(abs(diff(ek[p], ct[p]["kg"])), abs(diff(eu[p], ct[p]["usd"]))) for p in months),
+           "source": "UN Comtrade public preview API C/M/HS, reporter 156, partner 0, flow X, HS 854142+854143, captured 2026-11-24"}
+    for k in ("kg", "usd"):
+        out[k]["diffPct"] = diff(out[k]["ember"], out[k]["comtrade"])
+    if af.exists():
+        a = json.loads(af.read_text(encoding="utf-8"))
+        y = "2025"
+        if all(y in a[c] for c in ("854142", "854143")) and all(f"{y}-{m:02d}" in ek for m in range(1, 13)):
+            ck = sum(a[c][y]["kg"] for c in ("854142", "854143")) / 1e6
+            cu = sum(a[c][y]["usd"] for c in ("854142", "854143")) / 1e9
+            sk = sum(ek[f"{y}-{m:02d}"] for m in range(1, 13)); su = sum(eu[f"{y}-{m:02d}"] for m in range(1, 13))
+            out["annual"] = {"year": y, "kg": {"ember": sk, "comtrade": ck, "diffPct": diff(sk, ck)},
+                             "usd": {"ember": su, "comtrade": cu, "diffPct": diff(su, cu)}}
+    return out
+
+
 # ----------------------------------------------------------------- main
 def main():
     force_demo = "--demo" in sys.argv
@@ -316,16 +360,19 @@ def main():
     demo = series is None
     if demo:
         series = demo_series()
+    markets = [s for s in series if s.get("role") == "market"]
+    series = [s for s in series if s.get("role") != "market"]
     for s in series:
         s["fc"] = forecast_series(s)
-    if not demo:
-        add_annual_check(series)
+    xcheck = None if demo else crosscheck(series)
     board = {
         "meta": {"built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "demo": demo,
                  "snapshot": None if demo else json.loads((PROC / "catalog.json").read_text(encoding="utf-8"))[0].get("accessed"),
-                 "horizon": HORIZON},
+                 "horizon": series[0]["fc"]["horizon"] if series else 12},
         "content": read_content(),
         "series": series,
+        "markets": markets,
+        "crosscheck": xcheck,
     }
     OUT.write_text("window.BOARD = " + json.dumps(board, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)}  demo={demo}  series={len(series)}")

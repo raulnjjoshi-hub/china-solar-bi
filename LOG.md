@@ -36,4 +36,15 @@ and screenshots so the two can be cross-referenced.
   Found and fixed a bug: "Candidate - not verified" sources were counted as verified (10 instead of 2-3).
 - **Screenshots:** docs/screenshots/ui-before-*, ui-after-*, v2-*.
 
-## Stage 4: User test and revision (planned 26-27.11)
+## Stage 4: Data to 2026 and forecast to 2027 (26.11.2026)
+- **Issue:** the memo spoke about 2025, but the decision is about 2027. Comtrade monthly data for China ends 2024-12.
+- **Changes:** switched the main source to Ember China Solar Exports (China customs, monthly to Oct 2026, by destination)
+  and added Ember China solar generation as a domestic-demand proxy (the team's case sells in China). Forecast now runs
+  to Dec 2027 (14 months); trend methods fitted on the last 48 months. New: domestic demand view, destination-share chart,
+  2027 memo, signpost readings from data. Comtrade kept as an independent cross-check.
+- **Verification:** browser vs file checksums identical. Ember vs Comtrade 2022-2024: weight +0.001%, value +0.003%,
+  largest single month 0.06%; 2025 annual within 0.012%. Holdout: exports 12-month average 18.52% vs benchmark 20.90%
+  (trend 30.59%, rejected); domestic trend + season 7.31% vs 17.01%. Rendered at 1440/1280/768 px, no errors.
+- **Effect:** the memo and scenarios now speak about 2027 with data only one month old.
+
+## Stage 5: User test and revision (planned 27.11)

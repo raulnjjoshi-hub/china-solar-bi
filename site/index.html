@@ -267,7 +267,7 @@ const fmtDate=d=>{if(!d)return '';const [y,m,dd]=String(d).slice(0,10).split('-'
 function shortUnit(u){u=u||'';return u.replace(/thousand tonnes/i,'kt').replace(/USD billion/i,'bn USD').replace(/USD per kg/i,'USD/kg')}
 function fmt(v,dp){if(v==null||isNaN(v))return '–';const a=Math.abs(v);if(dp==null)dp=a<1?3:a<100?2:1;return v.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp})}
 const fv=v=>fmt(v), f1=x=>fmt(x,1), f2=x=>fmt(x,2);
-const sgn=(x,d=1)=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(d);
+const sgn=(x,d=1)=>{if(x==null||isNaN(x))return '–';const r=+Math.abs(x).toFixed(d);return (r===0?'':x>0?'+':'−')+r.toFixed(d);};
 const pct=x=>x==null||isNaN(x)?'–':(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(1)+'%';
 function deltaHTML(ch,vs){if(ch==null||isNaN(ch))return '';const c=ch>0.05?'up':ch<-0.05?'down':'flat',a=c==='up'?'▲':c==='down'?'▼':'■';
   return `<span class="delta ${c}">${a} ${Math.abs(ch).toFixed(1)}% <span class="vs">${esc(vs)}</span></span>`}
@@ -284,10 +284,15 @@ function tableHTML(cols,rows,opt={}){if(!rows.length)return empty(opt.empty||'No
 const rowStatus=(r,showEach)=>showEach?' '+statusTag(r.Status||r.status):'';
 const findSer=re=>B.series.find(s=>re.test(s.label));
 const volSer=()=>findSer(/net weight|volume/i)||B.series[0];
+const domSer=()=>B.series.find(s=>/generation/i.test(s.label));
+const mkt=id=>(B.markets||[]).find(m=>m.id===id);
+const sum12=(s,end=0)=>{const n=s.val.length;return s.val.slice(n-12-end,n-end).reduce((a,b)=>a+b,0)};
+const yoy12=s=>s&&s.val.length>=24?(sum12(s)/sum12(s,12)-1)*100:null;
+const avg12=(s,end=0)=>sum12(s,end)/12;
 function evSer(){return B.series.find(s=>s.id===S.evSeries)||B.series[0]}
 function method(s){return S.method&&s.fc.methods[S.method]?S.method:s.fc.default}
 function yoy(s){if(!s)return null;const n=s.val.length;return n>12?(s.val[n-1]/s.val[n-13]-1)*100:null}
-const kpiLabel=s=>/net weight|volume/i.test(s.label)?'Export volume':/unit value/i.test(s.label)?'Export price':/value/i.test(s.label)?'Export value':s.label;
+const kpiLabel=s=>/net weight|volume/i.test(s.label)?'Export volume':/unit value/i.test(s.label)?'Export price':/capacity/i.test(s.label)?'Export capacity':/generation/i.test(s.label)?'Domestic solar generation':/value/i.test(s.label)?'Export value':s.label;
 const seriesTitle=s=>/unit value/i.test(s.label)?'Export price (unit value)':kpiLabel(s);
 function staleNote(s){if(B.meta.demo||!B.meta.snapshot)return '';const last=s.time[s.time.length-1],[ly,lm]=last.split('-').map(Number),[sy,sm]=B.meta.snapshot.split('-').map(Number),gap=(sy-ly)*12+(sm-lm);
   return gap>6?`<div class="note"><b>Data ends ${esc(fmtMonth(last))}, ${gap} months before this snapshot.</b> UN Comtrade has not yet published China's monthly figures after that. The ${H}-month forecast therefore covers a period that has passed; it is checked against the published annual total under Evidence.</div>`:''}
@@ -336,19 +341,26 @@ function spark(vals,w=104,h=32,color='var(--ink-3)'){if(!vals||vals.length<2)ret
 /* ================= scenario engine (formulas unchanged; runs on the export-volume series) ================= */
 // Market export volume:  V_t = baseline_t × (1 + d/100 × t/12)
 // Company export volume index = 100 × (V_t / V_0)^beta ;  price index P_t = 100 × (1 + p/100 × t/12)
-// Company revenue index R_t = share × (Vidx × P/100) + (1 − share) × P      (domestic volume held flat)
+// Domestic demand G_t = domestic baseline_t × (1 + d/100 × t/12); domestic volume index = 100 × (G_t / G_0)^beta
+// Company revenue index R_t = share × (Vidx × P/100) + (1 − share) × (Gidx × P/100)
 // Operating margin mg_t = m0 + m × t/12 ;  operating profit per 100 of today's revenue E_t = R_t × mg_t / 100
 function effects(sid,skip){return allSignals().filter(s=>sigActive(s)&&s.id!==skip).reduce((a,s)=>{const e=s.eff[sid]||{};a.d+=+e.d||0;a.p+=+e.p||0;a.m+=+e.m||0;return a},{d:0,p:0,m:0})}
-function runScen(sid,withSig=true,skip=null){const s=volSer(),f=s.fc.methods[method(s)].ahead,V0=s.val[s.val.length-1],p=S.params[sid],e=withSig?effects(sid,skip):{d:0,p:0,m:0};
+function runScen(sid,withSig=true,skip=null){const s=volSer(),f=s.fc.methods[method(s)].ahead,V0=avg12(s),p=S.params[sid],e=withSig?effects(sid,skip):{d:0,p:0,m:0};
+  const g=domSer(),gf=g?g.fc.methods[g.fc.default].ahead:null,G0=g?avg12(g):1;
   const d=p.d+e.d,pr=p.p+e.p,mm=p.m+e.m,sh=S.share/100;
-  return f.map((b,i)=>{const t=i+1,V=b*(1+d/100*t/12),Vi=100*Math.pow(Math.max(V,1e-9)/V0,S.beta),P=100*(1+pr/100*t/12),R=sh*(Vi*P/100)+(1-sh)*P,mg=S.m0+mm*t/12;return {V,P,R,mg,E:R*mg/100}})}
+  return f.map((b,i)=>{const t=i+1,V=b*(1+d/100*t/12),Vi=100*Math.pow(Math.max(V,1e-9)/V0,S.beta),P=100*(1+pr/100*t/12),
+    G=gf?gf[Math.min(i,gf.length-1)]*(1+d/100*t/12):null,Gi=gf?100*Math.pow(Math.max(G,1e-9)/G0,S.beta):100,
+    R=sh*(Vi*P/100)+(1-sh)*(Gi*P/100),mg=S.m0+mm*t/12;return {V,G,P,R,mg,E:R*mg/100}})}
 // Signpost readings: computed from a board series when the indicator names one and a 12-month change.
-function signpostReading(r){const ind=String(r['Indicator']||'');let s=null;
-  if(/unit value|price/i.test(ind))s=findSer(/unit value/i);else if(/export.*(volume|weight)|exports, volume/i.test(ind))s=volSer();else if(/export.*value/i.test(ind)&&!/unit/i.test(ind))s=B.series.find(x=>/value/i.test(x.label)&&!/unit/i.test(x.label));
-  if(!s||!/12-month change/i.test(ind)||!/^S1$/.test(String(r['Source ID']||'').trim()))return {v:null};
-  const v=yoy(s),th=+r['Threshold'],dir=String(r['Tripped when']||'').toLowerCase();if(v==null||isNaN(th))return {v};
-  return {v,when:s.time[s.time.length-1],trip:dir==='below'?v<th:v>th}}
-const readingCell=r=>{const x=signpostReading(r);return x.v==null?'<span class="small">No data on the board yet</span>':`${pct(x.v)} <span class="small">(${esc(fmtMonth(x.when))})</span>`};
+function signpostReading(r){const ind=String(r['Indicator']||'');let s=null,level=false;
+  if(/share.*(eu|us)/i.test(ind)){s=mkt('cn_pv_share_eu_us');level=true}
+  else if(/eu imports/i.test(ind))s=mkt('cn_pv_exports_eu_kt');
+  else if(/unit value|price/i.test(ind))s=findSer(/unit value/i);
+  else if(/export.*(volume|weight)/i.test(ind))s=volSer();
+  if(!s||(!level&&!/12-month change/i.test(ind)))return {v:null};
+  const n=s.val.length,v=level?avg12(s):yoy12(s),th=+r['Threshold'],dir=String(r['Tripped when']||'').toLowerCase();if(v==null||isNaN(th))return {v};
+  return {v,when:s.time[n-1],level,trip:dir==='below'?v<th:v>th}}
+const readingCell=r=>{const x=signpostReading(r);return x.v==null?'<span class="small">No data on the board yet</span>':`${x.level?f1(x.v)+'%':pct(x.v)} <span class="small">(12 months to ${esc(fmtMonth(x.when))})</span>`};
 const stateTag=r=>{const x=signpostReading(r);return x.trip==null?tag('plain','No reading'):x.trip?tag('warn','Tripped'):tag('ok','Not tripped')};
 function verdictOf(o){if(o.bench)return 'bench';const v=SCEN.map(s=>S.scores[o.id][s.id]);if(v.some(x=>x==null))return 'none';return Math.min(...v)>=0?'robust':'contingent'}
 const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Not scored'),robust:tag('ok','Start now'),contingent:tag('warn','Prepare, then trigger')})[k];
@@ -356,7 +368,7 @@ const verdictTag=k=>({bench:tag('plain','Benchmark'),none:tag('prop','Not scored
 /* ================= header ================= */
 function header(){const b=C.brief||{},s=volSer();
   $('h-sub').textContent=`For the leadership of ${(b['Intended user']||'a privately owned Chinese PV manufacturer').replace(/^A /,'a ').replace(/ \([^)]*\)$/,'')}.`;
-  const src=B.meta.demo?'<b style="color:var(--down)">Demo data, not evidence</b>':'Source <b>UN Comtrade</b>, HS 854142 + 854143';
+  const src=B.meta.demo?'<b style="color:var(--down)">Demo data, not evidence</b>':'Sources <b>Ember</b> (China customs; electricity data), cross-checked with <b>UN Comtrade</b>';
   $('meta').innerHTML=`${src}<br>${s?`Data to <b>${esc(fmtMonth(s.time[s.time.length-1]))}</b> · `:''}Updated <b>${esc(fmtDate(B.meta.snapshot||B.meta.built))}</b>`;
   $('demo').innerHTML=B.meta.demo?'<div class="note demo"><b>Demo mode.</b> Synthetic placeholder series for layout testing. Real data replaces them once data/processed/catalog.json exists.</div>':''}
 
@@ -368,38 +380,43 @@ function kpiTile(s){const n=s.val.length;
    <div class="row">${deltaHTML(yoy(s),'vs '+fmtMonth(s.time[n-13]||''))}${spark(s.val.slice(-24))}</div></div>`}
 function scenarioBars(){if(!SCEN.length)return empty('No scenarios yet.');const rows=SCEN.map(x=>({x,o:runScen(x.id)[H-1]}));const max=Math.max(S.m0,...rows.map(r=>r.o.E),0.01)*1.1;
   return `<div class="bars">${rows.map(r=>`<div class="bar-row" style="--c:${r.x.color}"><span><span class="dot"></span>${esc(r.x.short)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(0,r.o.E)/max*100}%"></div><div class="bar-today" style="left:${S.m0/max*100}%" title="Today"></div></div><b style="text-align:right;font-weight:500">${f2(r.o.E)}</b></div>`).join('')}</div>
-   <p class="small" style="margin-top:var(--sp-2)">Operating profit per 100 of today's revenue after ${H} months. Black tick: today (${f2(S.m0)}). Company figures are illustrative.</p>`}
+   <p class="small" style="margin-top:var(--sp-2)">Operating profit per 100 of today's revenue in ${esc(fmtMonth(volSer().fc.aheadTime[H-1]))}. Black tick: today (${f2(S.m0)}). Company figures are illustrative.</p>`}
 function bottomLine(){const v=volSer(),u=findSer(/USD billion|, value$/i)||B.series.find(s=>/value/i.test(s.label)&&!/unit/i.test(s.label)),p=findSer(/unit value/i);
   const fc=v.fc.methods[method(v)],out=SCEN.map(x=>({x,o:runScen(x.id)[H-1]})).sort((a,c)=>a.o.E-c.o.E);
   const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent');
   const P=[];
   if(u&&p)P.push(`Chinese PV exports grew in volume (${pct(yoy(v))} year on year to ${fmtMonth(v.time[v.time.length-1])}) but fell in value (${pct(yoy(u))}), because the export price per kg dropped ${Math.abs(yoy(p)).toFixed(1)}%. Manufacturers are shipping more panels for less money.`);
   else P.push(`${v.label}: ${pct(yoy(v))} year on year to ${fmtMonth(v.time[v.time.length-1])}.`);
-  P.push(`The baseline forecast points to ${fv(fc.ahead[H-1])} ${shortUnit(v.unit)} a month by ${fmtMonth(v.fc.aheadTime[H-1])} (indicative range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}).`+(out.length?` Across the three scenarios, operating profit after ${H} months ranges from ${f2(out[0].o.E)} (${out[0].x.short.toLowerCase()}) to ${f2(out[out.length-1].o.E)} (${out[out.length-1].x.short.toLowerCase()}) per 100 of today's revenue, against ${f2(S.m0)} today.`:''));
+  P.push(`The baseline forecast points to ${fv(fc.ahead[H-1])} ${shortUnit(v.unit)} a month by ${fmtMonth(v.fc.aheadTime[H-1])} (indicative range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}).`+(out.length?` Across the three scenarios, operating profit by ${fmtMonth(v.fc.aheadTime[H-1])} ranges from ${f2(out[0].o.E)} (${out[0].x.short.toLowerCase()}) to ${f2(out[out.length-1].o.E)} (${out[out.length-1].x.short.toLowerCase()}) per 100 of today's revenue, against ${f2(S.m0)} today.`:''));
   P.push(rob.length||con.length?`Moves that hold up in every future: ${rob.length?rob.map(o=>o.name.toLowerCase()).join('; '):'none yet'}. Moves to prepare and trigger on a signpost: ${con.length?con.map(o=>o.name.toLowerCase()).join('; '):'none'}.`:`The strategic options have not been scored yet, so no recommendation is shown. Score them under Strategy.`);
   const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
   if(trip.length)P.push(`Warning light on: ${trip.map(r=>r['Indicator']+' is '+pct(signpostReading(r).v)+', past the '+r['Threshold']+(r['Unit']||'')+' threshold, pointing to '+(r['Points to']||'?')).join('; ')}.`);
   return P.map(x=>`<p>${esc(x)}</p>`).join('')}
-function memo(){const v=volSer(),n=v.val.length,fc=v.fc.methods[method(v)],p=findSer(/unit value/i);
-  const byYear=y=>{const ks=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t.startsWith(y));if(!ks.length)return null;const pk=ks.reduce((a,b)=>b[1]>a[1]?b:a);
-    const w=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t===(+y-1)+'-12'||t===y+'-01'||t===y+'-02').map(x=>x[1]);return w.length?{pk,ratio:pk[1]/(w.reduce((a,b)=>a+b,0)/w.length)}:null};
-  const yrs=[...new Set(v.time.map(t=>t.slice(0,4)))].slice(-2).map(byYear).filter(Boolean);
-  const peakMon=yrs.length&&yrs.every(y=>y.pk[0].slice(5)===yrs[0].pk[0].slice(5))?['January','February','March','April','May','June','July','August','September','October','November','December'][+yrs[0].pk[0].slice(5)-1]:null;
-  const rLo=Math.min(...yrs.map(y=>y.ratio)),rHi=Math.max(...yrs.map(y=>y.ratio));
-  const fpk=fc.ahead.reduce((a,b,i)=>b>a.v?{v:b,i}:a,{v:-1,i:0});
-  const sp=Object.fromEntries(SCEN.map(sc=>[sc.kind,{sc,pk:Math.max(...runScen(sc.id).map(o=>o.V))}]));
+function memo(){const v=volSer(),g=domSer(),u=B.series.find(x=>/value/i.test(x.label)&&!/unit/i.test(x.label)),fc=v.fc.methods[method(v)];
+  const n=v.val.length,last=fmtMonth(v.time[n-1]),FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const price=(end)=>u?sum12(u,end)*1000/sum12(v,end):null,pch=u?(price(0)/price(12)-1)*100:null;
+  const yrs=['2024','2025'].map(y=>{const ks=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t.startsWith(y));if(ks.length<12)return null;const pk=ks.reduce((a,b)=>b[1]>a[1]?b:a),av=ks.reduce((a,b)=>a+b[1],0)/12;return {pk,ratio:pk[1]/av}}).filter(Boolean);
+  const peak=yrs.length===2&&yrs[0].pk[0].slice(5)===yrs[1].pk[0].slice(5)?FULL[+yrs[0].pk[0].slice(5)-1]:null;
+  const sh=mkt('cn_pv_share_eu_us'),em=mkt('cn_pv_share_emerging');
+  const tot=(ser,fcArr,aheadT,yr)=>ser.time.reduce((a,t,i)=>t.startsWith(yr)?a+ser.val[i]:a,0)+aheadT.reduce((a,t,i)=>t.startsWith(yr)?a+fcArr[i]:a,0);
+  const idx27=v.fc.aheadTime.map((t,i)=>t.startsWith('2027')?i:-1).filter(i=>i>=0);
+  const e26=tot(v,fc.ahead,v.fc.aheadTime,'2026'),g26=g?tot(g,g.fc.methods[g.fc.default].ahead,g.fc.aheadTime,'2026'):null;
+  const sc=Object.fromEntries(SCEN.map(x=>{const r=runScen(x.id);return [x.kind,{x,e:idx27.reduce((a,i)=>a+r[i].V,0),d:g?idx27.reduce((a,i)=>a+r[i].G,0):null}]}));
+  const line=k=>{const o=sc[k];if(!o)return '';return ` By our scenario settings, 2027 exports total ${fv(o.e)} kt (${pct((o.e/e26-1)*100)} on 2026)${o.d!=null?` and domestic solar generation ${fv(o.d)} TWh (${pct((o.d/g26-1)*100)})`:''}.`};
   const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
-  const u=x=>fv(x)+' kt/month';
   const H3=t=>`<h3 style="margin:var(--sp-3) 0 6px">${t}</h3>`,P=t=>`<p>${t}</p>`;
-  return H3('The decision')+P('The need for solar power has grown rapidly over the last two decades. If the trend continues, the need for solar panels will keep rising. Management has to decide how to meet the increasing need while preparing for sudden changes.')+
-   H3('What we know')+P(`Chinese PV exports, our monthly indicator of industry output, ${peakMon?`peak in ${peakMon}`:'peak in spring'}: in ${yrs.map(y=>y.pk[0].slice(0,4)).join(' and ')} the peak was ${f1(rLo)}–${f1(rHi)} times the winter level. In ${esc(fmtMonth(v.time[n-1]))} volume was ${pct(yoy(v))} on a year earlier${p?`, while the export price per kg was ${pct(yoy(p))}: more panels are sold for less money`:''}. If the trend continues, the next peak reaches ${u(fpk.v)} in ${esc(fmtMonth(v.fc.aheadTime[fpk.i]))}.`)+
+  return H3('The decision')+P('The need for solar power has grown rapidly over the last two decades. If the trend continues, the need for solar panels will keep rising. Management has to decide how to meet the increasing need while preparing for sudden changes, looking ahead to 2027.')+
+   H3('What we know')+P(`In the 12 months to ${last}, China exported ${fv(sum12(v))} kt of solar cells and modules (${pct(yoy12(v))} on the previous 12 months)${u?`, worth ${f2(sum12(u))} bn USD (${pct(yoy12(u))}). The average export price was ${f2(price(0))} USD/kg (${pct(pch)})`:''}.`+
+     (g?` At home, China's solar generation, our indicator of domestic demand, grew ${pct(yoy12(g))} to ${fv(sum12(g))} TWh.`:'')+
+     (sh&&em?` The EU and US took ${f1(avg12(sh))}% of export weight (${f1(avg12(sh,12))}% a year earlier), while the Middle East, Latin America and Africa took ${f1(avg12(em))}% (${f1(avg12(em,12))}%).`:'')+
+     (peak?` Exports peak in ${peak}, at about ${f1(Math.min(...yrs.map(y=>y.ratio)))}–${f1(Math.max(...yrs.map(y=>y.ratio)))} times the monthly average.`:''))+
    H3('The three possibilities')+
-   (sp.base?P(`<b style="font-weight:600;color:var(--sc-base)">Base.</b> Current trends continue, so demand for PV cells reaches a new high in the coming year. Combined with China's goal of reducing carbon further, this means steady growth for PV manufacturers. On the board's current settings the peak reaches ${u(sp.base.pk)}.`):'')+
-   (sp.opt?P(`<b style="font-weight:600;color:var(--sc-opt-ink)">Optimistic.</b> China strengthens its lead in PV manufacturing, and high fuel prices in Europe push demand towards renewable energy, including solar. The peak reaches ${u(sp.opt.pk)}.`):'')+
-   (sp.chal?P(`<b style="font-weight:600;color:var(--sc-chal)">Challenging.</b> Demand for renewable energy grows more slowly as new data centres need steady power such as nuclear, and fossil fuel prices fall if the war in Ukraine, Iran or both ends. The peak reaches ${u(sp.chal.pk)}.`):'')+
+   (sc.base?P(`<b style="font-weight:600;color:var(--sc-base)">Base.</b> Current trends continue, so demand for PV cells keeps reaching new highs. Combined with China's goal of reducing carbon further, this means steady growth for PV manufacturers.${line('base')}`):'')+
+   (sc.opt?P(`<b style="font-weight:600;color:var(--sc-opt-ink)">Optimistic.</b> China strengthens its lead in PV manufacturing, and high fuel prices in Europe push demand towards renewable energy, including solar.${line('opt')}`):'')+
+   (sc.chal?P(`<b style="font-weight:600;color:var(--sc-chal)">Challenging.</b> Demand for renewable energy grows more slowly as new data centres need steady power such as nuclear, and fossil fuel prices fall if the war in Ukraine, Iran or both ends.${line('chal')}`):'')+
    H3('The options')+`<ul class="plain-list" style="font-size:15px"><li>Diversify sales to emerging markets such as the Middle East and Latin America.</li><li>Build assembly capacity outside China to deal with tariffs and local-content rules.</li><li>Cut or pause marginal capacity instead of fighting on price.</li></ul>`+
    H3('What we would do')+P('Prepare to expand into emerging markets in case demand from Europe and North America falls or stays flat. If demand drops sharply, stop expanding capacity immediately. If cell output does not change, shift to higher-efficiency production lines.')+
-   (trip.length?P(`<span class="small" style="color:var(--ink-2)">Signpost status now: ${trip.map(r=>esc(r['Indicator'])+' at '+pct(signpostReading(r).v)+', past the '+esc(r['Threshold'])+esc(r['Unit']||'')+' threshold').join('; ')}.</span>`):'')}
+   (trip.length?P(`<span class="small" style="color:var(--ink-2)">Signposts tripped now: ${trip.map(r=>{const x=signpostReading(r);return esc(r['Indicator'])+' at '+(x.level?f1(x.v)+'%':pct(x.v))+' (threshold '+esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+esc(r['Unit']||'')+')'}).join('; ')}.</span>`):'')}
 function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(v)],n=v.val.length,obs=B.series.slice(0,3);
   const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent'),sp=C.signposts||[];
   const li=(arr,f,none)=>arr.length?`<ul class="plain-list">${arr.map(f).join('')}</ul>`:`<p class="small">${none}</p>`;
@@ -408,42 +425,40 @@ function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(
     <div><div class="k">Decision</div><div class="v">${esc(b['Decision']||'—')}</div></div>
     <div><div class="k">Key question</div><div class="v">${esc(b['Key question']||'—')}</div></div>
     <div><div class="k">Horizon</div><div class="v">Forecast ${esc((b['Forecast horizon']||'12 months').replace(/, monthly data/,''))}; scenarios ${esc((b['Scenario horizon']||'to 2030').toLowerCase())}</div></div></div></div>
-   ${obs.map(kpiTile).join('')}
-   <div class="card kpi c-3"><div class="label"><span>Forecast, ${H} months</span>${TAG.mod}</div>
-    <div class="value">${fv(fc.ahead[H-1])}<span class="unit">${esc(shortUnit(v.unit))}</span></div>
-    <div class="small">${esc(fmtMonth(v.fc.aheadTime[H-1]))}, range ${fv(fc.lo[H-1])}–${fv(fc.hi[H-1])}</div>
-    <div class="row">${deltaHTML((fc.ahead[H-1]/v.val[n-1]-1)*100,'vs latest')}${spark(v.val.slice(-12).concat(fc.ahead),104,32,'var(--accent)')}</div></div>
-   <div class="card c-8 bottomline"><div class="card-head"><div><h2>Management memo</h2><p class="small" style="margin-top:2px">Team narrative. Numbers update from the data and the current scenario settings.</p></div>${TAG.ass}</div>${memo()}</div>
+   ${obs.concat(domSer()?[domSer()]:[]).slice(0,4).map(kpiTile).join('')}
+   <div class="card c-8 bottomline"><div class="card-head"><div><h2>Management memo</h2><p class="small" style="margin-top:2px">Team narrative for 2027. Numbers update from the data and the current scenario settings.</p></div>${TAG.ass}</div>${memo()}</div>
    <div class="stack c-4"><div class="card"><div class="card-head"><div><h2>Scenario outlook</h2></div>${TAG.out}</div>${scenarioBars()}<p style="margin:12px 0 0"><a href="#outlook">Explore the scenarios →</a></p></div>
    <div class="card"><div class="card-head"><div><h2>What to do</h2><p class="takeaway">From the options scored under Strategy and the signposts that tell us when to act.</p></div></div>
     <div class="cols3">
      <div><div class="col-h" style="color:var(--up)">Start now <span class="n">${rob.length}</span></div>${li(rob,o=>`<li>${esc(o.name)}</li>`,'No option scored as robust yet.')}</div>
      <div><div class="col-h" style="color:#8A5A00">Prepare, then trigger <span class="n">${con.length}</span></div>${li(con,o=>`<li>${esc(o.name)}<span class="sub">Act when: ${esc(o.sig||'signpost not set')}</span></li>`,'No contingent option yet.')}</div>
-     <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])} ${stateTag(r)}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}${signpostReading(r).v!=null?' · now '+pct(signpostReading(r).v):''}</span></li>`,'No signposts yet.')}</div></div>
+     <div><div class="col-h">Watch <span class="n">${sp.length}</span></div>${li(sp,r=>`<li>${esc(r['Indicator'])} ${stateTag(r)}<span class="sub">${esc(r['Tripped when']||'')} ${esc(r['Threshold'])} ${esc(r['Unit']||'')} → ${esc(r['Points to']||'')}${signpostReading(r).v!=null?' · now '+(signpostReading(r).level?f1(signpostReading(r).v)+'%':pct(signpostReading(r).v)):''}</span></li>`,'No signposts yet.')}</div></div>
     <p style="margin:var(--sp-2) 0 0"><a href="#strategy">Open the options and signposts →</a></p></div></div>
   </div>`}
 
 /* ================= OUTLOOK (forecast + scenarios + signals) ================= */
 function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.methods[mk];
   if(!SCEN.length){$('t-outlook').innerHTML=empty('No scenarios yet (Scenarios sheet).');return}
-  const vol=S.metric==='vol',shown=vol?Math.min(24,n):1,x=s.time.slice(n-shown).concat(s.fc.aheadTime);
-  const val=o=>vol?o.V:S.metric==='rev'?o.R:o.E,start=vol?s.val[n-1]:S.metric==='rev'?100:S.m0,vfm=vol?fv:f2;
+  const g=domSer(),dom=S.metric==='dom'&&g,vol=S.metric==='vol'||dom,src=dom?g:s,sfc=dom?g.fc.methods[g.fc.default]:fc,sn=src.val.length;
+  const shown=vol?Math.min(36,sn):1,x=src.time.slice(sn-shown).concat(src.fc.aheadTime);
+  const val=o=>dom?o.G:S.metric==='vol'?o.V:S.metric==='rev'?o.R:o.E,start=vol?src.val[sn-1]:S.metric==='rev'?100:S.m0,vfm=vol?fv:f2;
   const series=[];
-  if(vol){series.push({name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true});
-    series.push({name:'Forecast',label:'Forecast',labelColor:'var(--accent)',pts:[[shown-1,start]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2})}
+  if(vol){series.push({name:'Actual',pts:src.val.slice(sn-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true});
+    series.push({name:'Forecast',label:'Forecast',labelColor:'var(--accent)',pts:[[shown-1,start]].concat(sfc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2})}
   else series.push({name:'Today',pts:[[shown-1,start],[shown+H-1,start]],color:'var(--ink-3)',dash:'2 3',w:1});
   SCEN.forEach(sc=>series.push({name:sc.short,label:sc.short,labelColor:sc.ink,pts:[[shown-1,start]].concat(runScen(sc.id).map((o,i)=>[shown+i,val(o)])),color:sc.color,w:2.2,end:true}));
-  const unit={vol:shortUnit(s.unit)+' per month',rev:'Revenue index, today = 100',ebit:"Operating profit per 100 of today's revenue"}[S.metric];
+  const unit={vol:shortUnit(s.unit)+' per month',dom:'TWh per month',rev:'Revenue index, today = 100',ebit:"Operating profit per 100 of today's revenue"}[S.metric];
   const rows=SCEN.map(sc=>({sc,o:runScen(sc.id)[H-1],o0:runScen(sc.id,false)[H-1]}));
   const srt=rows.slice().sort((a,b)=>val(a.o)-val(b.o)),lo=srt[0],hi=srt[srt.length-1];
-  const take=vol?`The baseline forecast reaches ${fv(fc.ahead[H-1])} ${shortUnit(s.unit)} by ${fmtMonth(s.fc.aheadTime[H-1])}. The scenarios bend it from ${fv(lo.o.V)} (${lo.sc.short.toLowerCase()}) to ${fv(hi.o.V)} (${hi.sc.short.toLowerCase()}).`
+  const take=dom?`China's solar generation, our indicator of domestic demand, is forecast at ${fv(sfc.ahead[H-1])} TWh in ${fmtMonth(src.fc.aheadTime[H-1])}; the scenarios range from ${fv(lo.o.G)} to ${fv(hi.o.G)} TWh.`
+    :vol?`Exports have levelled off, so the best-tested method is the 12-month average: ${fv(fc.ahead[H-1])} ${shortUnit(s.unit)} a month by ${fmtMonth(s.fc.aheadTime[H-1])}. The scenarios bend it from ${fv(lo.o.V)} (${lo.sc.short.toLowerCase()}) to ${fv(hi.o.V)} (${hi.sc.short.toLowerCase()}).`
     :`By ${fmtMonth(s.fc.aheadTime[H-1])}, ${S.metric==='rev'?'revenue':'profit'} ranges from ${vfm(val(lo.o))} (${lo.sc.short.toLowerCase()}) to ${vfm(val(hi.o))} (${hi.sc.short.toLowerCase()}), against ${vfm(start)} today.`;
   const meta=[['d','Export volume vs baseline','% per year',-20,20,0.5],['p','Export price','% per year',-30,30,0.5],['m','Operating margin change','pp by month '+H,-10,10,0.1]];
   const cards=rows.map(r=>{const sc=r.sc,e=effects(sc.id);return `<div class="card scen-card c-4" style="--c:${sc.color};--c-ink:${sc.ink}">
     <div class="card-head" style="margin-bottom:0"><span class="name">${esc(sc.name)}</span>${statusTag(sc.status)}</div>
     <p class="story" title="${esc(sc.story)}">${esc(sc.story)}</p>
-    <div class="nums"><div>Volume, ${esc(shortUnit(s.unit))}<b>${fv(r.o.V)}</b></div><div>Revenue idx<b>${f1(r.o.R)}</b></div><div>Profit / 100<b>${f2(r.o.E)}</b></div></div>
-    <p class="small" style="margin:8px 0 0">Price index ${f1(r.o.P)} · margin ${f1(r.o.mg)}% · news effect ${sgn(r.o.E-r.o0.E,2)}</p>
+    <div class="nums"><div>Exports, ${esc(shortUnit(s.unit))}/mo<b>${fv(r.o.V)}</b></div><div>Domestic, TWh/mo<b>${r.o.G==null?'–':fv(r.o.G)}</b></div><div>Profit / 100<b>${f2(r.o.E)}</b></div></div>
+    <p class="small" style="margin:8px 0 0">Revenue index ${f1(r.o.R)} · price index ${f1(r.o.P)} · margin ${f1(r.o.mg)}% · news effect ${sgn(r.o.E-r.o0.E,2)}</p>
     <details class="adj" data-open="${sc.id}" ${S.open[sc.id]?'open':''}><summary>Adjust assumptions ${TAG.ass}</summary>
      ${meta.map(([k,l,u,a,b,st])=>`<div class="srow"><div class="lbl">${l}<span>${u}${e[k]?' · news adds '+sgn(e[k]):''}</span></div><input type="range" data-p="${sc.id}.${k}" min="${a}" max="${b}" step="${st}" value="${S.params[sc.id][k]}" aria-label="${esc(sc.short+' scenario: '+l)}"><span class="val">${S.params[sc.id][k]}</span></div>`).join('')}
      ${sc.why?`<p class="small" style="margin-top:12px">${esc(sc.why)} ${sc.src?'('+esc(sc.src)+')':''}</p>`:''}</details></div>`}).join('');
@@ -458,21 +473,21 @@ function renderOutlook(){const s=volSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   const cs=(k,o)=>o?`<div class="srow"><div class="lbl">${esc(o.label)}<span>${esc(o.unit)}</span></div><input type="range" data-g="${k}" min="${o.min}" max="${o.max}" step="${k==='beta'?0.1:0.5}" value="${S[k]}" aria-label="${esc(o.label)}"><span class="val">${S[k]}</span></div>`:'';
   $('t-outlook').innerHTML=`${staleNote(s)}<div class="g12">
    <div class="card c-12"><div class="card-head"><div><h2>Outlook to ${esc(fmtMonth(s.fc.aheadTime[H-1]))}: forecast and scenarios</h2><p class="takeaway">${esc(take)}</p></div>
-     <div class="seg" role="group" aria-label="Measure">${[['vol','Export volume'],['rev','Company revenue'],['ebit','Company profit']].map(([k,l])=>`<button data-metric="${k}" aria-pressed="${S.metric===k}">${l}</button>`).join('')}</div></div>
+     <div class="seg" role="group" aria-label="Measure">${[['vol','Exports'],['dom','Domestic demand'],['rev','Company revenue'],['ebit','Company profit']].filter(([k])=>k!=='dom'||domSer()).map(([k,l])=>`<button data-metric="${k}" aria-pressed="${S.metric===k}">${l}</button>`).join('')}</div></div>
     <div id="chart-x"></div>
-    <div class="card-foot">${vol?`${TAG.obs} Actual, UN Comtrade. ${TAG.mod} Baseline: ${esc(fc.label.toLowerCase())}, shaded indicative range. `:''}${TAG.out} Scenario lines apply each scenario's assumptions and the news below. Possible futures, not predictions; no probabilities.</div></div>
+    <div class="card-foot">${vol?`${TAG.obs} Actual: ${dom?'Ember electricity data':'Ember, China customs'}. ${TAG.mod} Forecast: ${esc(sfc.label.toLowerCase())}, shaded indicative range. `:''}${TAG.out} Scenario lines apply each scenario's assumptions and the news below. Possible futures, not predictions; no probabilities.</div></div>
    ${cards}
-   <div class="card c-8"><div class="card-head"><div><h3>News that shifts the scenarios</h3><p class="takeaway" style="font-size:var(--fs-small)">Switch an item off to see its effect. Numbers show the change in operating profit per 100 of today's revenue after ${H} months.</p></div></div>
+   <div class="card c-8"><div class="card-head"><div><h3>News that shifts the scenarios</h3><p class="takeaway" style="font-size:var(--fs-small)">Switch an item off to see its effect. Numbers show the change in operating profit per 100 of today's revenue by ${fmtMonth(B.series[0].fc.aheadTime[H-1])}.</p></div></div>
     ${news||empty('No news items yet (Signals sheet).')}
     <div style="border-top:1px solid var(--line);margin-top:var(--sp-2);padding-top:var(--sp-2)"><div class="small" style="margin-bottom:8px"><b style="font-weight:600;color:var(--ink-2)">Test a hypothetical shock</b> · adds an illustrative item, clearly labelled, so you can watch the scenarios react. Not news.</div>
      <div class="controls">${HYPO.filter(h=>!S.hypo.includes(h.id)).map(h=>`<button class="link" data-hypo="${h.id}">+ ${esc(h.title)}</button>`).join('')||'<span class="small">All three tests applied.</span>'}</div></div></div>
    <div class="stack c-4">
     <div class="card"><h3 style="margin-bottom:8px">Key uncertainties</h3>${U.length?`<ul class="plain-list">${U.map(u=>`<li>${esc(u['Uncertainty'])}<span class="sub">${esc(u['One end'])} ↔ ${esc(u['Other end'])}</span></li>`).join('')}</ul>`:empty('None recorded.')}</div>
     <div class="card"><details class="more" data-open="company" ${S.open.company?'open':''}><summary>Company inputs (illustrative)</summary>${cs('m0',ci.m0)}${cs('share',ci.share)}${cs('beta',ci.beta)}<p class="small" style="margin-top:12px">Not real company data.</p></details>
-     <details class="more" style="margin-top:12px"><summary>How the numbers are calculated</summary><p class="small" style="margin-top:8px">Market volume = baseline × (1 + volume assumption × t/12). Company export volume index = 100 × (market volume ÷ volume today)^sensitivity. Price index = 100 × (1 + price assumption × t/12). Revenue index = export share × volume index × price index ÷ 100 + (1 − export share) × price index. Margin = starting margin + margin change × t/12. Profit per 100 of today's revenue = revenue index × margin ÷ 100.</p></details></div>
+     <details class="more" style="margin-top:12px"><summary>How the numbers are calculated</summary><p class="small" style="margin-top:8px">Exports and domestic demand = their forecasts × (1 + volume assumption × t/12). Company volume indices = 100 × (path ÷ average of the last 12 months)^sensitivity. Price index = 100 × (1 + price assumption × t/12). Revenue index = export share × export index × price index ÷ 100 + (1 − export share) × domestic index × price index ÷ 100. Margin = starting margin + margin change × t/12. Profit per 100 of today's revenue = revenue index × margin ÷ 100.</p></details></div>
    </div></div>`;
   chart($('chart-x'),{x,yUnit:unit,series,split:shown-1,aria:'Outlook: '+unit+' by scenario',valueFmt:vfm,
-    band:vol?{lo:[[shown-1,start]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,start]].concat(fc.hi.map((v,i)=>[shown+i,v]))}:null});
+    band:vol?{lo:[[shown-1,start]].concat(sfc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,start]].concat(sfc.hi.map((v,i)=>[shown+i,v]))}:null});
   document.querySelectorAll('[data-metric]').forEach(b=>b.onclick=()=>{S.metric=b.dataset.metric;commit()});
   document.querySelectorAll('details[data-open]').forEach(d=>d.ontoggle=()=>{S.open[d.dataset.open]=d.open;save()});
   document.querySelectorAll('[data-on]').forEach(e=>e.onchange=()=>{S.sigOn[e.dataset.on]=e.checked;commit()});
@@ -486,13 +501,19 @@ function renderStrategy(){const O=C.options||[];const v=O.map(verdictOf),cnt=k=>
   const take=cnt('none')===O.filter(o=>!o.bench).length?'No option has been scored yet. Score each one to see which moves are robust.':`${cnt('robust')} robust (start now), ${cnt('contingent')} contingent (wait for a signpost)${cnt('none')?`, ${cnt('none')} not yet scored`:''}.`;
   const showEach=!allProposal(O),sp=C.signposts||[];
   const rows=O.map((o,i)=>`<tr${o.bench?' style="color:var(--ink-2)"':''}><td><span style="font-weight:500">${esc(o.name)}</span>${rowStatus(o,showEach)}<span class="sub">${esc(o.what)}</span></td>${SCEN.map(s=>`<td class="n"><select class="score" data-score="${o.id}.${s.id}" aria-label="${esc(o.name+', score under '+s.short)}"><option value="">–</option>${[-2,-1,0,1,2].map(x=>`<option value="${x}" ${S.scores[o.id][s.id]===x?'selected':''}>${x>0?'+'+x:x}</option>`).join('')}</select></td>`).join('')}<td>${verdictTag(v[i])}</td><td class="small" style="color:var(--ink-2)">${esc(o.sig)}</td></tr>`).join('');
-  $('t-strategy').innerHTML=`<div class="g12"><div class="card c-12"><div class="card-head"><div><h2>Strategic options for the manufacturer</h2><p class="takeaway">${esc(take)}</p></div></div>
+  const shM=mkt('cn_pv_share_eu_us'),emM=mkt('cn_pv_share_emerging');
+  const roll=m=>m.val.map((_,i)=>i<11?null:m.val.slice(i-11,i+1).reduce((a,b)=>a+b,0)/12);
+  let mkHTML='';if(shM&&emM){const r1=roll(shM),r2=roll(emM),k=shM.time.length,from=Math.max(11,k-60);
+    mkHTML=`<div class="card c-12"><div class="card-head"><div><h2>Where China's solar exports go</h2><p class="takeaway">The EU and US share of export weight moved from ${f1(r1[k-25])}% to ${f1(r1[k-1])}% over the last two years, while the Middle East, Latin America and Africa moved from ${f1(r2[k-25])}% to ${f1(r2[k-1])}% (12-month averages to ${esc(fmtMonth(shM.time[k-1]))}).</p></div>${TAG.obs}</div><div id="chart-mk"></div><div class="card-foot">Ember China Solar Exports (China customs), panels and cells by destination. Evidence for the emerging-markets option and the EU and US signpost.</div></div>`;
+    window.__mk={x:shM.time.slice(from),series:[{name:'EU and US',label:'EU + US',labelColor:'var(--ink)',pts:r1.slice(from).map((v,i)=>[i,v]),color:'var(--ink)',w:2,end:true},{name:'Middle East, Latin America, Africa',label:'Emerging',labelColor:'var(--accent)',pts:r2.slice(from).map((v,i)=>[i,v]),color:'var(--accent)',w:2,end:true}],yUnit:'% of export weight, 12-month average',aria:'Share of China PV exports by destination',valueFmt:x=>f1(x)+'%'}}
+  $('t-strategy').innerHTML=`<div class="g12">${mkHTML}<div class="card c-12"><div class="card-head"><div><h2>Strategic options for the manufacturer</h2><p class="takeaway">${esc(take)}</p></div></div>
    <p class="small" style="margin-bottom:var(--sp-2)">Scored −2 (hurts) to +2 (helps) in each scenario. Zero or better in all three: robust, start now. Negative in any: contingent, prepare and wait for the signpost. Scores are team judgement; change them here to test the verdict.</p>
    ${showEach?'':proposalNote(O)}
    ${O.length?`<div class="tablewrap"><table><thead><tr><th>Option</th>${SCEN.map(s=>`<th class="n" style="color:${s.ink}">${esc(s.short)}</th>`).join('')}<th>Verdict</th><th>Signpost to act</th></tr></thead><tbody>${rows}</tbody></table></div>`:empty('No options yet (Options sheet).')}</div>
    <div class="card c-12"><div class="card-head"><div><h2>Signposts</h2><p class="takeaway">Indicators with thresholds. When one is crossed, it points to the future that is arriving and the action to take.</p></div></div>
    ${proposalNote(sp)}
    ${tableHTML([{h:'Indicator',f:r=>esc(r['Indicator'])+rowStatus(r,!allProposal(sp))},{h:'Threshold',n:1,f:r=>esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+' '+esc(r['Unit']||'')},{h:'Reading',n:1,f:readingCell},{h:'State',f:stateTag},{h:'Points to',k:'Points to'},{h:'Action if tripped',k:'Action if tripped'}],sp,{empty:'No signposts yet (Signposts sheet).'})}</div></div>`;
+  if(window.__mk&&$('chart-mk'))chart($('chart-mk'),window.__mk);
   document.querySelectorAll('[data-score]').forEach(e=>e.onchange=()=>{const [o,s]=e.dataset.score.split('.');S.scores[o][s]=e.value===''?null:+e.value;commit()})}
 
 /* ================= CONTEXT ================= */
@@ -509,7 +530,7 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   const x=s.time.slice(n-shown).concat(s.fc.aheadTime);
   const mrows=Object.entries(s.fc.methods).map(([k,v])=>({k,...v}));const best=mrows.slice().sort((a,b)=>a.mape-b.mape)[0],bench=s.fc.methods.snaive;
   const beat=bench&&best.k!=='snaive'?`${esc(best.label)} had the lowest holdout error: ${f2(best.mape)}% against ${f2(bench.mape)}% for the seasonal benchmark.`:'No method beat the seasonal benchmark on the holdout.';
-  const ac=s.annualCheck,am=ac&&ac.methods[mk];
+  const X=B.crosscheck;
   const D=C.sources||[],used=D.filter(r=>isDone(r.Status)).length;
   $('t-evidence').innerHTML=`<nav class="subnav" aria-label="Evidence sections"><a href="#ev-data">Data and forecast check</a><a href="#ev-sources">Sources</a><a href="#ev-method">Method</a><a href="#ev-log">Development log</a><a href="#ev-ai">AI use and prompts</a><a href="#ev-limits">Limits</a><a href="#ev-about">About</a></nav>
   <div class="g12">
@@ -519,17 +540,17 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
       <label class="field">Method<select id="c-method">${mrows.map(m=>`<option value="${m.k}" ${m.k===mk?'selected':''}>${esc(m.label)}</option>`).join('')}</select></label></div></div>
     <div id="chart-e"></div>
     <div class="legend"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>Holdout test</span><span>Shaded: indicative 80% range, not a statistical interval</span></div>
-    <div class="card-foot">${TAG.obs} ${TAG.mod} Source ${esc(s.source_id)}: ${esc(s.note||'see Sources')}. The method chosen here also drives the Outlook forecast.</div></div>
+    <div class="card-foot">${TAG.obs} ${TAG.mod} Source ${esc(s.source_id)}: ${esc(s.note||'see Sources')}. The method chosen here also drives the Outlook forecast for exports.</div></div>
     <div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Holdout test</h3><p class="takeaway" style="font-size:var(--fs-small)">${beat}</p></div>${TAG.mod}</div>
      ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===mk?' '+tag('mod','In use'):'')},{h:'MAPE',n:1,f:r=>f2(r.mape)+'%'},{h:'RMSE',n:1,f:r=>fv(r.rmse)}],mrows)}
      <div class="card-foot">Last ${s.fc.holdout} months (from ${esc(fmtMonth(s.fc.holdoutStart))}) hidden, forecast and scored.</div></div>
-    ${ac?`<div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Check against ${esc(ac.year)} actual</h3><p class="takeaway" style="font-size:var(--fs-small)">${am?`The ${esc(am.label.toLowerCase())} forecast was ${Math.abs(am.error*100).toFixed(1)}% ${am.error>=0?'above':'below'} the published total of ${fv(ac.actual)} ${esc(shortUnit(s.unit))}.`:''}</p></div>${TAG.obs}</div>
-     ${tableHTML([{h:'Method',f:r=>esc(r.label)},{h:'Forecast',n:1,f:r=>fv(r.forecast)},{h:'Error',n:1,f:r=>pct(r.error*100)}],Object.entries(ac.methods).map(([k,v])=>({k,...v})))}
-     <div class="card-foot">${esc(ac.source)}</div></div>`:''}
+    ${X?`<div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Cross-check: Ember vs UN Comtrade</h3><p class="takeaway" style="font-size:var(--fs-small)">Two independent publications of China's customs data agree: over ${X.months} months the totals differ by ${Math.abs(X.kg.diffPct).toFixed(3)}% (weight) and ${Math.abs(X.usd.diffPct).toFixed(3)}% (value), well under rounding.</p></div>${TAG.obs}</div>
+     ${tableHTML([{h:'Check',k:'c'},{h:'Ember',n:1,k:'e'},{h:'Comtrade',n:1,k:'t'},{h:'Difference',n:1,k:'d'}],[{c:`Weight ${X.from.slice(0,4)}–${X.to.slice(0,4)}, kt`,e:fv(X.kg.ember),t:fv(X.kg.comtrade),d:sgn(X.kg.diffPct,3)+'%'},{c:`Value ${X.from.slice(0,4)}–${X.to.slice(0,4)}, bn USD`,e:f2(X.usd.ember),t:f2(X.usd.comtrade),d:sgn(X.usd.diffPct,3)+'%'}].concat(X.annual?[{c:`Weight ${X.annual.year}, kt`,e:fv(X.annual.kg.ember),t:fv(X.annual.kg.comtrade),d:sgn(X.annual.kg.diffPct,3)+'%'},{c:`Value ${X.annual.year}, bn USD`,e:f2(X.annual.usd.ember),t:f2(X.annual.usd.comtrade),d:sgn(X.annual.usd.diffPct,3)+'%'}]:[]))}
+     <div class="card-foot">Largest single-month difference: ${f2(X.maxMonthlyDiffPct)}%. ${esc(X.source)}</div></div>`:''}
    <div class="card c-12 anchor" id="ev-sources"><div class="card-head"><div><h2>Sources</h2><p class="takeaway">${D.length} sources recorded at dataset level, ${used} verified or in use. The board is a dated snapshot; a scheduled GitHub Action refreshes the data monthly and whenever the team workbook changes.</p></div></div>
     ${tableHTML([{h:'ID',k:'ID',keep:1},{h:'Dataset',f:r=>'<span style="font-weight:500">'+esc(r['Name (exact table or article title)'])+'</span><span class="sub">'+esc(r['Provider / publisher']||'')+(r['URL (table-level link)']&&/^https?:/.test(r['URL (table-level link)'])?` · <a href="${esc(r['URL (table-level link)'].split(' ')[0])}" target="_blank" rel="noopener">link</a>`:'')+'</span>',keep:1,w:'26%'},{h:'Code / filter',f:r=>(r['Dataset code / table']?`<code>${esc(r['Dataset code / table'])}</code>`:'')+`<span class="sub">${esc(r['Variables and filters']||'')}</span>`},{h:'Unit',k:'Unit'},{h:'Coverage',f:r=>esc(r['Coverage (from-to)']||'')+(r['Access date']?`<span class="sub">Accessed ${esc(fmtDate(r['Access date']))}</span>`:'')},{h:'Gaps and flags',k:'Missing values and flags'},{h:'Transformations',k:'Transformations applied'},{h:'Status',f:r=>statusTag(r.Status),keep:1}],D,{empty:'Sources sheet is empty.',hideEmpty:1})}</div>
    <div class="card c-12 anchor" id="ev-method"><h2 style="margin-bottom:8px">Method</h2>
-    <p>Four simple methods are fitted on each series: seasonal naive (the benchmark: same month last year), 12-month moving average, linear trend, and linear trend plus a monthly seasonal index. The last ${s.fc.holdout} months are hidden, forecast and scored (MAPE, RMSE). The board uses the lowest-error method that beats the benchmark and forecasts ${H} months from all data. The shaded range is ±1.28 × holdout RMSE, widening with the square root of the step: an indicative guide, not a statistical interval. Scenarios shift the volume baseline, the export price and the operating margin by the assumptions on the Outlook tab.</p>
+    <p>Four simple methods are fitted on each series: seasonal naive (the benchmark: same month last year), 12-month moving average, linear trend, and linear trend plus a monthly seasonal index. Trend methods use the last ${s.fc.fitWindow||48} months, because the market changed after 2021. The last ${s.fc.holdout} months are hidden, forecast and scored (MAPE, RMSE). The board uses the lowest-error method that beats the benchmark and forecasts to ${esc(fmtMonth(s.fc.aheadTime[s.fc.aheadTime.length-1]))} from all data. For exports the 12-month average wins because volumes have levelled off since 2025; for domestic solar generation the trend with seasonality wins clearly. The shaded range is ±1.28 × holdout RMSE, widening with the square root of the step: an indicative guide, not a statistical interval. Scenarios shift the volume baseline, the export price and the operating margin by the assumptions on the Outlook tab.</p>
     <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-3);margin-top:var(--sp-2)">
      <div><h3 style="margin-bottom:8px">Hand checks against the source</h3>${tableHTML([{h:'Indicator',k:'Indicator'},{h:'Period',k:'Period'},{h:'Board',n:1,k:'Value on board'},{h:'Source',n:1,k:'Value at source'},{h:'Checked by',k:'Checked by'}],C.checks||[],{empty:'No hand checks recorded yet (Data checks sheet).'})}</div>
      <div><h3 style="margin-bottom:8px">Forecast target options considered</h3>${C.targetDecision?`<p class="small">Team decision: <b>${esc(C.targetDecision)}</b>. ${esc(C.targetReason||'')}</p>`:''}${tableHTML([{h:'ID',k:'ID'},{h:'Indicator',k:'Indicator'},{h:'Frequency / unit',k:'Frequency / unit'}],C.targets||[])}</div></div></div>
@@ -549,7 +570,7 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
     <p>The team writes all content in <code>content/team.xlsx</code>. <code>scripts/fetch.py</code> downloads the public data; <code>scripts/build.py</code> computes the forecasts and writes <code>site/data.js</code>. The page is plain HTML with bundled fonts and works offline. Settings you change stay in this browser.</p>
     <button class="link" id="reset" style="margin-top:8px">Reset my changes</button></div>
   </div>`;
-  chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and ${H}-month forecast`,
+  chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and forecast to ${fmtMonth(s.fc.aheadTime[H-1])}`,
     series:[{name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true},
       {name:'Holdout test',pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),color:'var(--ink-3)',dash:'1.5 3',w:1.6},
       {name:'Forecast',label:'Forecast',pts:[[shown-1,s.val[n-1]]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2}],
@@ -566,6 +587,8 @@ const AI_LOG=[
  {s:'Data, 24.11',q:'Download China monthly PV exports 2022 to date from Comtrade',a:'Monthly data only to Dec 2024; 2025 annual total exists',o:'Accepted',c:'Browser and file checksums identical; monthly 2024 sum equals 2024 annual total (0.00%)'},
  {s:'Forecast, 24.11',q:'Validate the forecast beyond the holdout',a:'Compared each method\'s 2025 total with the published annual figure',o:'Accepted',c:'Volume trend within 0.1%; value trend off by -21% because price falls slowed'},
  {s:'Design, 24.11',q:'Restyle the board without changing any numbers',a:'New design; MAPE shown with one decimal instead of two',o:'Revised',c:'Scripted comparison of every displayed number old vs new; precision restored'},
+ {s:'Data, 26.11',q:'Find monthly data that reaches 2026, so the memo can look to 2027',a:'Ember China Solar Exports (customs, to Oct 2026, by destination) and Ember monthly China solar generation',o:'Accepted',c:'Checksums browser vs file identical; Ember vs Comtrade differ by 0.001% over 36 months and 0.00004% for 2025'},
+ {s:'Forecast, 26.11',q:'Refit the forecasts on the longer series',a:'Trend methods failed on exports (30% error) once volumes levelled off',o:'Revised',c:'Holdout picked the 12-month average for exports; trend + seasonality for domestic generation (7.3% error)'},
  {s:'Design, 24.11',q:'Count verified sources',a:'Said 10 of 10 verified',o:'Revised',c:'"Candidate - not verified" matched the word "verified"; count fixed to 3'}];
 const PROMPTS=[
  ['Add a news signal','Read this article: <URL>. Quote only the facts it states, with the date. Propose effects on volume, price and margin for each scenario and explain each as a judgement.'],
@@ -574,10 +597,10 @@ const PROMPTS=[
  ['Stress the scenarios','Find the volume, price and margin assumptions at which the base scenario becomes worse than the challenging one, and report which signposts would show us moving there.'],
  ['Check the work','Act as a sceptical reviewer: recompute the holdout errors independently, list every claim that rests on judgement, and say which assumption changes the result most.']];
 const LIMITS=[
- 'Monthly data ends December 2024. The forecast covers a period that has already passed; it is checked against the published 2025 annual total, not against monthly figures.',
- 'The company sells mainly in China, but no monthly data on domestic panel sales is public. China\'s monthly PV exports are used as the indicator of industry output, prices and the export opportunity.',
+ 'Export data comes from Ember, which republishes China\'s customs statistics. It matches UN Comtrade to within 0.01%, but the latest months may be revised.',
+ 'The company sells mainly in China, but no monthly data on domestic panel sales is public. China\'s solar generation (Ember) stands in for domestic demand; it follows installed capacity, so it reacts to new installations with a lag.',
+ 'Export capacity in GW is Ember\'s estimate from value and average prices, not a customs figure.',
  'Export figures cover all Chinese exporters, not one company. Company revenue and profit are illustrative and show sensitivity, not real results.',
- 'There is no split by destination yet, so the board cannot show which export markets are growing.',
  'News effects, scenario assumptions and option scores are team judgement. Proposals are marked until the team has reviewed them.',
  'Forecast methods are deliberately simple. The shaded range is indicative, not a statistical confidence interval.',
  'Scenarios are possible futures, not predictions, and carry no probabilities.'];

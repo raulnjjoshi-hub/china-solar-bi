@@ -1,6 +1,6 @@
 """Download public data into data/raw (dated) and write tidy series to data/processed.
 
-STATUS: Comtrade implemented (preview endpoint, no key needed). Eurostat and NBS are TODO.
+STATUS: Ember is the main source (China customs exports by destination + China solar generation),\nrefreshed by download. Comtrade (preview API) is kept for the cross-check. Eurostat and NBS are TODO.
 Until catalog.json exists, build.py runs in demo mode.
 
     python scripts/fetch.py                       # fetch from the API
@@ -18,7 +18,9 @@ Rules
 """
 from __future__ import annotations
 
+import csv
 import datetime as dt
+import io
 import json
 import os
 import pathlib
@@ -112,6 +114,104 @@ def write_comtrade(rows: list[dict], accessed: str | None = None) -> list[dict]:
     return out
 
 
+
+# ----------------------------------------------------------------- Ember (main source since 26.11.2026)
+EMBER_EXPORTS = "https://files.ember-energy.org/public-downloads/customs/outputs/mart_solar_exports_full_release_monthly.csv"
+EMBER_GEN = "https://files.ember-energy.org/public-downloads/generation/outputs/release_generation_monthly_global.csv"
+EMBER_AREAS = {"world": ("World", "Region"), "eu": ("EU", "Region"), "us": ("United States", "Country or economy"),
+               "me": ("Middle East", "Region"), "latam": ("Latin America and Caribbean", "Region"),
+               "africa": ("Africa", "Region"), "asean": ("ASEAN", "Region")}
+AGG_COLS = ["world_kg", "world_usd", "world_mw", "eu_kg", "us_kg", "me_kg", "latam_kg", "africa_kg", "asean_kg"]
+
+
+def aggregate_ember_exports(text: str) -> list[dict]:
+    """Monthly totals of Panels + Cells (Ember China Solar Exports, from China customs).
+    World and regional rows are Ember's own aggregates; the US is a country row."""
+    rows = csv.reader(io.StringIO(text))
+    next(rows)
+    m = {}
+    for r in rows:
+        if len(r) < 12 or r[5] not in ("Panels", "Cells"):
+            continue
+        per = r[1][:7]
+        for k, (area, typ) in EMBER_AREAS.items():
+            if r[0] == area and r[2] == typ:
+                o = m.setdefault(per, {})
+                o[k + "_kg"] = o.get(k + "_kg", 0) + float(r[7] or 0)
+                if k == "world":
+                    o["world_usd"] = o.get("world_usd", 0) + float(r[8] or 0)
+                    o["world_mw"] = o.get("world_mw", 0) + float(r[11] or 0)
+    return [{"period": p, **{c: round(m[p].get(c, 0)) for c in AGG_COLS}} for p in sorted(m)]
+
+
+def china_solar_generation(text: str) -> list[dict]:
+    out = []
+    for r in csv.reader(io.StringIO(text)):
+        if len(r) > 6 and r[0] == "China" and r[4] == "Solar":
+            out.append({"period": r[2][:7], "twh": float(r[6])})
+    return out
+
+
+def fetch_ember() -> list[dict]:
+    """Download both Ember files, save dated aggregates to data/raw/ember, then process."""
+    import requests
+    ex = requests.get(EMBER_EXPORTS, timeout=120); ex.raise_for_status()
+    gen = requests.get(EMBER_GEN, timeout=300); gen.raise_for_status()
+    agg, g = aggregate_ember_exports(ex.text), china_solar_generation(gen.text)
+    if len(agg) < 60 or len(g) < 60:
+        raise RuntimeError("Ember files look incomplete")
+    d = RAW / "ember"; d.mkdir(parents=True, exist_ok=True)
+    with open(d / f"solar_exports_agg_{TODAY}.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, ["period"] + AGG_COLS); w.writeheader(); w.writerows(agg)
+    with open(d / f"china_solar_generation_{TODAY}.csv", "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, ["period", "twh"]); w.writeheader(); w.writerows(g)
+    return process_ember()
+
+
+def _latest(pattern):
+    files = sorted((RAW / "ember").glob(pattern))
+    return files[-1] if files else None
+
+
+def process_ember() -> list[dict]:
+    """Turn the latest saved Ember aggregates into tidy series + catalog entries."""
+    fe, fg = _latest("solar_exports_agg_*.csv"), _latest("china_solar_generation_*.csv")
+    if not fe or not fg:
+        return []
+    acc = fe.stem.split("_")[-1]
+    ag = list(csv.DictReader(open(fe, encoding="utf-8")))
+    num = lambda r, c: float(r[c])
+
+    def write(sid, rows):
+        with open(PROC / f"{sid}.csv", "w", newline="", encoding="utf-8") as fh:
+            fh.write("period,value,flag\n")
+            for per, v in rows:
+                fh.write(f"{per},{v:.6f},\n")
+        return sid + ".csv"
+
+    note_ex = "Ember China Solar Exports (China customs), World, Panels + Cells, monthly"
+    cat = []
+    specs = [
+        ("cn_pv_exports_kg", "China PV cell + module exports, net weight", "thousand tonnes", lambda r: num(r, "world_kg") / 1e6, "series"),
+        ("cn_pv_exports_usd", "China PV cell + module exports, value", "USD billion", lambda r: num(r, "world_usd") / 1e9, "series"),
+        ("cn_pv_export_unit_value", "China PV cell + module exports, unit value (value / weight)", "USD per kg", lambda r: num(r, "world_usd") / num(r, "world_kg"), "series"),
+        ("cn_pv_exports_gw", "China PV cell + module exports, capacity (Ember estimate)", "GW", lambda r: num(r, "world_mw") / 1000, "series"),
+        ("cn_pv_share_eu_us", "Share of China PV exports going to the EU and US", "% of weight", lambda r: (num(r, "eu_kg") + num(r, "us_kg")) / num(r, "world_kg") * 100, "market"),
+        ("cn_pv_share_emerging", "Share of China PV exports going to the Middle East, Latin America and Africa", "% of weight", lambda r: (num(r, "me_kg") + num(r, "latam_kg") + num(r, "africa_kg")) / num(r, "world_kg") * 100, "market"),
+        ("cn_pv_exports_eu_kt", "China PV exports to the EU, net weight", "thousand tonnes", lambda r: num(r, "eu_kg") / 1e6, "market"),
+    ]
+    for sid, label, unit, fn, role in specs:
+        f = write(sid, [(r["period"], fn(r)) for r in ag])
+        cat.append({"id": sid, "label": label, "unit": unit, "source_id": "S11", "frequency": "Monthly",
+                    "file": f, "accessed": acc, "role": role, "note": note_ex})
+    g = list(csv.DictReader(open(fg, encoding="utf-8")))
+    f = write("cn_solar_generation_twh", [(r["period"], float(r["twh"])) for r in g])
+    cat.append({"id": "cn_solar_generation_twh", "label": "China solar power generation", "unit": "TWh",
+                "source_id": "S6", "frequency": "Monthly", "file": f, "accessed": fg.stem.split("_")[-1], "role": "series",
+                "note": "Ember Monthly Electricity Data, China, Solar, generation (TWh)"})
+    return cat
+
+
 def fetch_eurostat_comext() -> list[dict]:
     """TODO: Eurostat Comext DS-045409, partner CN, CN8 codes under HS 854142 / 854143, imports, monthly."""
     return []
@@ -126,25 +226,25 @@ def fetch_nbs_solar_cells() -> list[dict]:
 def main():
     import sys
     PROC.mkdir(parents=True, exist_ok=True)
-    if "--from-raw" in sys.argv:
+    if "--from-raw" in sys.argv:  # legacy: rebuild Comtrade series from a saved response
         f = pathlib.Path(sys.argv[sys.argv.index("--from-raw") + 1])
         cat = write_comtrade(json.loads(f.read_text(encoding="utf-8")), accessed=f.stem)
         (PROC / "catalog.json").write_text(json.dumps(cat, indent=1), encoding="utf-8")
         print(f"catalog from {f.name}: {len(cat)} series")
         return
-    catalog = []
-    for fn in (fetch_comtrade_exports, fetch_eurostat_comext, fetch_nbs_solar_cells):
-        try:
-            catalog += fn()
-        except Exception as e:  # network blocked, API change: keep the committed snapshot
-            print(f"{fn.__name__} failed ({e}); keeping existing snapshot")
-    if catalog:
-        for c in catalog:
-            c.setdefault("accessed", TODAY)
-        (PROC / "catalog.json").write_text(json.dumps(catalog, indent=1), encoding="utf-8")
-        print(f"catalog: {len(catalog)} series")
+    if "--offline" in sys.argv:  # process the latest saved Ember files without downloading
+        catalog = process_ember()
     else:
-        print("no series fetched; existing data/processed snapshot is kept")
+        try:
+            catalog = fetch_ember()
+        except Exception as e:  # network blocked or file changed: keep the committed snapshot
+            print(f"fetch_ember failed ({e}); processing the latest saved Ember files")
+            catalog = process_ember()
+    if catalog:
+        (PROC / "catalog.json").write_text(json.dumps(catalog, indent=1), encoding="utf-8")
+        print(f"catalog: {len(catalog)} series, accessed {catalog[0]['accessed']}")
+    else:
+        print("no series; existing data/processed snapshot is kept")
 
 
 if __name__ == "__main__":

@@ -18,7 +18,10 @@ assumed must be visibly distinct. LLM-generated numbers are never evidence.
 - Forecast target (team confirms in Forecast target sheet): proposal F1 = China PV exports, HS 854142
   (cells) and 854143 (modules), UN Comtrade, monthly, volume with value alongside. HS 2022 split means
   clean series from 2022. Second series: NBS monthly solar cell output.
-- Horizons: forecast 12 months; scenarios to 2030 (15th Five-Year Plan).
+- Horizons: forecast to Dec 2027 (TARGET_END in build.py, 14 months from Oct 2026 data); scenarios to 2030.
+- Data (26.11): main source Ember China Solar Exports (S11, customs, monthly to Oct 2026, by destination) + Ember
+  China solar generation (S6, domestic proxy). Comtrade (S1) is the cross-check only. `fetch.py --offline` processes
+  saved raw files in data/raw/ember/. Trend methods fit last 48 months (FIT_WINDOW).
 - Scenarios (team's choice, 24.11): A Base: current trends continue (note: not "most likely"),
   B Challenging: fossil comeback, C Optimistic: energy-security boom. Uncertainties shown as a list:
   Western market access, global demand for solar. Slider numbers are illustrative drafts until the team justifies them.
