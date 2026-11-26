@@ -46,5 +46,6 @@ and screenshots so the two can be cross-referenced.
   largest single month 0.06%; 2025 annual within 0.012%. Holdout: exports 12-month average 18.52% vs benchmark 20.90%
   (trend 30.59%, rejected); domestic trend + season 7.31% vs 17.01%. Rendered at 1440/1280/768 px, no errors.
 - **Effect:** the memo and scenarios now speak about 2027 with data only one month old.
+- **Screenshots:** docs/screenshots/v3-*.
 
 ## Stage 5: User test and revision (planned 27.11)
