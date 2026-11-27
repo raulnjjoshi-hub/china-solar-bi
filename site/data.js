@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 13:41",
+  "built": "2026-11-27 13:44",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -749,6 +749,40 @@ window.BOARD = {
     "Used for": "Considered for forecasting, not used: annual data (and Statista is paywalled). The board uses monthly Ember data (S11, S6).",
     "Status": "Considered, not used",
     "Checked by": null
+   },
+   {
+    "ID": "S41",
+    "Name (exact table or article title)": "Revealed: The top 10 PV module suppliers in 2021 - part one",
+    "Provider / publisher": "PV Tech (Finlay Colville)",
+    "Dataset code / table": null,
+    "URL (table-level link)": "https://www.pv-tech.org/revealed-the-top-10-pv-module-suppliers-in-2021-part-one/",
+    "Variables and filters": null,
+    "Unit": null,
+    "Frequency": null,
+    "Coverage (from-to)": null,
+    "Access date": "2026-11-27",
+    "Missing values and flags": null,
+    "Transformations applied": null,
+    "Used for": "Scenario C text: 8 of the 10 largest module suppliers in 2021 were Chinese",
+    "Status": "Candidate - not verified",
+    "Checked by": null
+   },
+   {
+    "ID": "S42",
+    "Name (exact table or article title)": "Global solar module shipments hit 703 GW in 2024 (ITRPV 16th edition)",
+    "Provider / publisher": "pv magazine",
+    "Dataset code / table": null,
+    "URL (table-level link)": "https://www.pv-magazine.com/2025/04/15/global-solar-module-shipments-hit-703-gw-in-2024/",
+    "Variables and filters": null,
+    "Unit": null,
+    "Frequency": null,
+    "Coverage (from-to)": null,
+    "Access date": "2026-11-27",
+    "Missing values and flags": null,
+    "Transformations applied": null,
+    "Used for": "Scenario B price assumption (module prices -33% in 2024)",
+    "Status": "Candidate - not verified",
+    "Checked by": null
    }
   ],
   "checks": [],
@@ -982,11 +1016,11 @@ window.BOARD = {
     "u1": null,
     "u2": null,
     "d": 3.0,
-    "p": -4.0,
+    "p": 2.0,
     "m": 0.0,
-    "why": "Illustrative draft. Team to justify with sources.",
-    "src": "S9, S10, S34, S35",
-    "status": "Proposal"
+    "why": "Draft (27.11), team to confirm. Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and capacity is still about double demand (S22). Margin unchanged.",
+    "src": "S9, S10, S34, S35, S11, S20, S18, S14, S22",
+    "status": "Draft"
    },
    {
     "id": "B",
@@ -994,12 +1028,12 @@ window.BOARD = {
     "story": "Renewable demand grows more slowly as data centres need steady power and fossil fuels cheapen if the wars in Iran and Ukraine end. The US imposes harsh tariffs, the EU cuts dependence on Chinese manufacturing and Beijing limits exports of cutting-edge panels. Little technology progress.",
     "u1": null,
     "u2": null,
-    "d": -8.0,
-    "p": -10.0,
+    "d": -10.0,
+    "p": -15.0,
     "m": -3.0,
-    "why": "Illustrative draft. Team to justify with sources.",
-    "src": "S9",
-    "status": "Proposal"
+    "why": "Draft (27.11), team to confirm. Volume -10%/yr: the size of the 2026 global fall (-10.8%, S20), with Western access closing (EU+US take 35% of exports, S11). Price -15%/yr: the price war returns; half the 2024 fall of 33% (S42), with capacity about double demand (S22). Margin -3 pp: leaders already had negative net margins in 2025 (Trina -10.5%, S32).",
+    "src": "S9, S20, S11, S42, S22, S32",
+    "status": "Draft"
    },
    {
     "id": "C",
@@ -1007,23 +1041,23 @@ window.BOARD = {
     "story": "China keeps or strengthens its lead in PV manufacturing. Continued wars keep fuel prices high, pushing Europe and Asia towards locally produced renewable power and electric cars. EU-China ties warm and dependence worries ease. Technology makes panels cheaper.",
     "u1": null,
     "u2": null,
-    "d": 8.0,
-    "p": -2.0,
-    "m": 1.0,
-    "why": "Illustrative draft. Team to justify with sources.",
-    "src": "S9, S12",
-    "status": "Proposal"
+    "d": 10.0,
+    "p": 5.0,
+    "m": 2.0,
+    "why": "Draft (27.11), team to confirm. Volume +10%/yr: installations outside China grow 15% in 2026 (S19) and exports doubled in a month when fuel prices spiked (Mar 2026, S12). Price +5%/yr: below the 15.8% rise of the past year (S18) because capacity is still ample (S22). Margin +2 pp: higher prices and fuller factories.",
+    "src": "S9, S12, S19, S18, S22, S41",
+    "status": "Draft"
    }
   ],
   "company": {
    "m0": {
-    "value": 3.0,
+    "value": 1.0,
     "min": -10.0,
     "max": 20.0,
     "label": "Starting operating margin",
     "unit": "%",
-    "basis": "Illustrative. PV makers' margins have been thin or negative during the price war: check a listed producer's report.",
-    "status": "Proposal"
+    "basis": "Draft (27.11), team to confirm: about the 2025 gross margin of the market leaders (Trina 1.02%, S32; Longi modules/cells 0.19%, S22). Their net margins were negative, so 1% operating is optimistic for a smaller firm.",
+    "status": "Draft"
    },
    "share": {
     "value": 0.0,
