@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 13:44",
+  "built": "2026-11-27 13:47",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -100,8 +100,8 @@ window.BOARD = {
     "Access date": null,
     "Missing values and flags": "Jan-Feb reported combined",
     "Transformations applied": null,
-    "Used for": "Second series / production context",
-    "Status": "Candidate - not verified",
+    "Used for": "Considered, not used: NBS output data could not be verified in time; the board uses Ember exports (S11) instead.",
+    "Status": "Considered, not used",
     "Checked by": null
    },
    {
@@ -117,8 +117,8 @@ window.BOARD = {
     "Access date": null,
     "Missing values and flags": null,
     "Transformations applied": null,
-    "Used for": "EU market exposure",
-    "Status": "Candidate - not verified",
+    "Used for": "Considered, not used: Ember destination data (S11) already gives EU imports from China monthly.",
+    "Status": "Considered, not used",
     "Checked by": null
    },
    {
@@ -134,8 +134,8 @@ window.BOARD = {
     "Access date": null,
     "Missing values and flags": "Not a database; collect by hand",
     "Transformations applied": null,
-    "Used for": "Domestic demand context",
-    "Status": "Candidate - not verified",
+    "Used for": "Considered, not used: NEA monthly installations are press releases, not a dataset; used as context via S16, S18 and S36.",
+    "Status": "Considered, not used",
     "Checked by": null
    },
    {
@@ -151,8 +151,8 @@ window.BOARD = {
     "Access date": null,
     "Missing values and flags": null,
     "Transformations applied": null,
-    "Used for": "Long-run demand context",
-    "Status": "Candidate - not verified",
+    "Used for": "Considered, not used: annual only; the board uses monthly Ember data (S6, S11).",
+    "Status": "Considered, not used",
     "Checked by": null
    },
    {
@@ -185,8 +185,8 @@ window.BOARD = {
     "Access date": null,
     "Missing values and flags": null,
     "Transformations applied": null,
-    "Used for": "PESTLE context",
-    "Status": "Candidate - not verified",
+    "Used for": "Considered, not used: general indicators not needed for the solar case.",
+    "Status": "Considered, not used",
     "Checked by": null
    },
    {
@@ -1019,7 +1019,7 @@ window.BOARD = {
     "p": 2.0,
     "m": 0.0,
     "why": "Draft (27.11), team to confirm. Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and capacity is still about double demand (S22). Margin unchanged.",
-    "src": "S9, S10, S34, S35, S11, S20, S18, S14, S22",
+    "src": "S9, S10, S34, S35, S37, S11, S20, S18, S14, S22",
     "status": "Draft"
    },
    {
