@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 13:05",
+  "built": "2026-11-27 13:41",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -1210,12 +1210,12 @@ window.BOARD = {
     "name": "Diversify sales to emerging markets",
     "what": "Middle East, Africa, South and Southeast Asia, Latin America",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": 1,
+     "B": 0,
+     "C": 2
     },
     "sig": "G2",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: export growth is outside China (S19, S13); in Challenging all Chinese exporters crowd into the same markets.",
     "bench": false,
     "status": "Proposal"
    },
@@ -1224,12 +1224,12 @@ window.BOARD = {
     "name": "Build assembly capacity outside China",
     "what": "Keeps access to markets with tariffs or local-content rules",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": -1,
+     "B": 0,
+     "C": -1
     },
     "sig": "G2",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: costly for a domestic-only firm, and tariffs and forced-labour checks follow component origin (S24, S28); pays only if a market demands local production.",
     "bench": false,
     "status": "Proposal"
    },
@@ -1238,12 +1238,12 @@ window.BOARD = {
     "name": "Cut or pause marginal capacity",
     "what": "Join industry consolidation instead of fighting on price",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": 1,
+     "B": 2,
+     "C": -1
     },
     "sig": "G1, G3",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: margins near zero and capacity about double demand (S22); shedding weak lines helps most in Challenging, loses share in a boom.",
     "bench": false,
     "status": "Proposal"
    },
@@ -1252,12 +1252,12 @@ window.BOARD = {
     "name": "Invest in next-generation cell technology",
     "what": "Higher efficiency to escape the commodity price war",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": 1,
+     "B": 0,
+     "C": 2
     },
     "sig": "",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: TOPCon dominates and PERC is fading (S29); smaller payoff in Challenging, which assumes little technical progress.",
     "bench": false,
     "status": "Proposal"
    },
@@ -1266,12 +1266,12 @@ window.BOARD = {
     "name": "Supply-chain traceability and carbon-footprint certification",
     "what": "Meet due-diligence and carbon rules in EU and US",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": 1,
+     "B": 0,
+     "C": 1
     },
     "sig": "",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: cheap and required before any EU sale (EU forced-labour ban from 14 Dec 2027, S26); matters only if the company exports.",
     "bench": false,
     "status": "Proposal"
    },
@@ -1280,12 +1280,12 @@ window.BOARD = {
     "name": "Move downstream",
     "what": "Storage bundles, project development, services",
     "scores": {
-     "A": null,
-     "B": null,
-     "C": null
+     "A": 1,
+     "B": 0,
+     "C": 1
     },
     "sig": "",
-    "why": "",
+    "why": "Draft (27.11), team to confirm: curtailment and negative prices create demand for storage (S17, S19); a new business needing new skills.",
     "bench": false,
     "status": "Proposal"
    }
