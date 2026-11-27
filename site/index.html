@@ -313,11 +313,12 @@ function chart(el,spec){
   const vf=spec.valueFmt||fv;let g='';
   if(spec.split!=null&&spec.split<n-1){const xs=X(spec.split);g+=`<rect x="${xs}" y="${m.t}" width="${W-m.r-xs}" height="${Ht-m.t-m.b}" fill="var(--fc-fill)"/>`+
     `<line x1="${xs}" x2="${xs}" y1="${m.t}" y2="${Ht-m.b}" stroke="var(--ink-3)" stroke-dasharray="2 3"/><text class="zone" x="${xs+8}" y="${m.t+14}">Forecast</text>`+(spec.split>2?`<text class="zone" x="${xs-8}" y="${m.t+14}" text-anchor="end">Actual</text>`:'')}
+  if(spec.zone){const a=X(spec.zone.from),b=X(spec.zone.to);g+=`<rect x="${a}" y="${m.t}" width="${b-a}" height="${Ht-m.t-m.b}" fill="var(--ink)" opacity=".05"/>`+(b-a>110?`<text class="zone" x="${a+8}" y="${m.t+14}">${esc(spec.zone.label)}</text>`:'')}
   for(let v=lo;v<=hi+1e-9;v+=st){g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${Math.abs(v-lo)<1e-9?THEME.axis:THEME.grid}"/><text x="${m.l-8}" y="${Y(v)+4}" text-anchor="end">${tickFmt(v,st)}</text>`}
   if(spec.yUnit)g+=`<text class="unit-label" x="0" y="${m.t-14}">${esc(spec.yUnit)}</text>`;
   let ticks=[];for(let i=0;i<n;i++){const mm=spec.x[i].slice(5);if(mm==='01'||(n<=30&&!narrow&&(mm==='04'||mm==='07'||mm==='10'))||(n<=14&&mm!=='01'))ticks.push(i)}
   if(!ticks.length||ticks[0]>3)ticks.unshift(0);
-  const minGap=narrow?44:52;ticks=ticks.filter((t,k,a)=>k===0||X(t)-X(a[k-1])>=minGap);
+  const minGap=narrow?44:52;{const kept=[];ticks.forEach(t=>{if(!kept.length||X(t)-X(kept[kept.length-1])>=minGap)kept.push(t)});ticks=kept}
   ticks.forEach(i=>{g+=`<text x="${X(i)}" y="${Ht-8}" text-anchor="${i===0?'start':'middle'}">${esc(xLabel(spec.x[i],narrow))}</text>`});
   if(spec.band){const up=spec.band.hi.map(p=>`${X(p[0])},${Y(p[1])}`),dn=spec.band.lo.slice().reverse().map(p=>`${X(p[0])},${Y(p[1])}`);g+=`<polygon points="${up.concat(dn).join(' ')}" fill="${spec.band.color||THEME.band}" opacity=".14"/>`}
   spec.series.forEach(s=>{if(!s.pts.length)return;g+=`<polyline fill="none" stroke="${s.color}" stroke-width="${s.w||2}" ${s.dash?`stroke-dasharray="${s.dash}"`:''} stroke-linejoin="round" stroke-linecap="round" points="${s.pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')}"/>`;
@@ -537,13 +538,15 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
   $('t-evidence').innerHTML=`<nav class="subnav" aria-label="Evidence sections"><a href="#ev-data">Data and forecast check</a><a href="#ev-sources">Sources</a><a href="#ev-method">Method</a><a href="#ev-log">Development log</a><a href="#ev-ai">AI use and prompts</a><a href="#ev-limits">Limits</a><a href="#ev-about">About</a></nav>
   <div class="g12">
    <div class="card c-12 anchor" id="ev-data"><div class="card-head"><div><h2>${esc(seriesTitle(s))}: history and forecast check</h2>
-      <p class="takeaway">Latest ${fv(s.val[n-1])} ${esc(shortUnit(s.unit))} in ${esc(fmtMonth(s.time[n-1]))}, ${pct(yoy(s))} year on year. The dotted line shows what the method predicted for the ${s.fc.holdout} months it was not allowed to see.</p></div>
+      <p class="takeaway">Latest ${fv(s.val[n-1])} ${esc(shortUnit(s.unit))} in ${esc(fmtMonth(s.time[n-1]))}, ${pct(yoy(s))} year on year. The grey area marks the last ${s.fc.holdout} months, which the method was not allowed to see; the dotted line is what it predicted for them.</p></div>
      <div class="controls"><label class="field">Series<select id="c-series">${B.series.map(o=>`<option value="${esc(o.id)}" ${o.id===s.id?'selected':''}>${esc(seriesTitle(o))}</option>`).join('')}</select></label>
       <label class="field">Method<select id="c-method">${mrows.map(m=>`<option value="${m.k}" ${m.k===mk?'selected':''}>${esc(m.label)}</option>`).join('')}</select></label></div></div>
     <div id="chart-e"></div>
-    <div class="legend"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>Holdout test</span><span>Shaded: indicative 80% range, not a statistical interval</span></div>
+    <div class="legend"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dashed"></i>Forecast</span><span><i style="border-color:var(--accent);border-top-style:dotted;border-top-width:3px"></i>Holdout prediction</span><span><i style="border:0;background:rgba(0,0,0,.08);height:10px;width:16px"></i>Holdout test period</span><span>Shaded: indicative 80% range, not a statistical interval</span></div>
     <div class="card-foot">${TAG.obs} ${TAG.mod} Source ${esc(s.source_id)}: ${esc(s.note||'see Sources')}. The method chosen here also drives the Outlook forecast for exports.</div></div>
     <div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Holdout test</h3><p class="takeaway" style="font-size:var(--fs-small)">${beat}</p></div>${TAG.mod}</div>
+     <div id="chart-h"></div>
+     <div class="legend" style="margin-bottom:12px"><span><i style="border-color:var(--ink)"></i>Actual</span><span><i style="border-color:var(--accent);border-top-style:dotted;border-top-width:3px"></i>${esc(fc.label)}</span>${mk!=='snaive'?'<span><i style="border-color:var(--ink-3);border-top-style:dashed"></i>Seasonal naive (benchmark)</span>':''}</div>
      ${tableHTML([{h:'Method',f:r=>esc(r.label)+(r.k===mk?' '+tag('mod','In use'):'')},{h:'MAPE',n:1,f:r=>f2(r.mape)+'%'},{h:'RMSE',n:1,f:r=>fv(r.rmse)}],mrows)}
      <div class="card-foot">Last ${s.fc.holdout} months (from ${esc(fmtMonth(s.fc.holdoutStart))}) hidden, forecast and scored.</div></div>
     ${X?`<div class="card c-6"><div class="card-head" style="margin-bottom:12px"><div><h3>Cross-check: Ember vs UN Comtrade</h3><p class="takeaway" style="font-size:var(--fs-small)">Two independent publications of China's customs data agree: over ${X.months} months the totals differ by ${Math.abs(X.kg.diffPct).toFixed(3)}% (weight) and ${Math.abs(X.usd.diffPct).toFixed(3)}% (value), well under rounding.</p></div>${TAG.obs}</div>
@@ -572,11 +575,14 @@ function renderEvidence(){const s=evSer(),n=s.val.length,mk=method(s),fc=s.fc.me
     <p>The team writes all content in <code>content/team.xlsx</code>. <code>scripts/fetch.py</code> downloads the public data; <code>scripts/build.py</code> computes the forecasts and writes <code>site/data.js</code>. The page is plain HTML with bundled fonts and works offline. Settings you change stay in this browser.</p>
     <button class="link" id="reset" style="margin-top:8px">Reset my changes</button></div>
   </div>`;
-  chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,aria:`${s.label}: actual, holdout test and forecast to ${fmtMonth(s.fc.aheadTime[H-1])}`,
+  chart($('chart-e'),{x,yUnit:shortUnit(s.unit),split:shown-1,zone:{from:hs-(n-shown),to:shown-1,label:'Holdout test'},aria:`${s.label}: actual, holdout test and forecast to ${fmtMonth(s.fc.aheadTime[H-1])}`,
     series:[{name:'Actual',pts:s.val.slice(n-shown).map((v,i)=>[i,v]),color:THEME.obs,w:2,end:true},
-      {name:'Holdout test',pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),color:'var(--ink-3)',dash:'1.5 3',w:1.6},
+      {name:'Holdout prediction',pts:fc.holdoutFc.map((v,i)=>[hs+i-(n-shown),v]).filter(p=>p[0]>=0),color:THEME.fc,dash:'1 4',w:2.4},
       {name:'Forecast',label:'Forecast',pts:[[shown-1,s.val[n-1]]].concat(fc.ahead.map((v,i)=>[shown+i,v])),color:THEME.fc,dash:'5 4',w:2}],
     band:{lo:[[shown-1,s.val[n-1]]].concat(fc.lo.map((v,i)=>[shown+i,v])),hi:[[shown-1,s.val[n-1]]].concat(fc.hi.map((v,i)=>[shown+i,v]))}});
+  {const ht=s.time.slice(hs),act=s.val.slice(hs).map((v,i)=>[i,v]),ser=[{name:'Actual',label:'Actual',pts:act,color:THEME.obs,w:2},{name:fc.label,label:'Prediction',pts:fc.holdoutFc.map((v,i)=>[i,v]),color:THEME.fc,dash:'1 4',w:2.4}];
+   if(mk!=='snaive'&&bench)ser.push({name:'Seasonal naive (benchmark)',label:'Benchmark',pts:bench.holdoutFc.map((v,i)=>[i,v]),color:'var(--ink-3)',dash:'4 3',w:1.5});
+   chart($('chart-h'),{x:ht,yUnit:shortUnit(s.unit),aria:`Holdout test: actual vs predicted, ${fmtMonth(ht[0])} to ${fmtMonth(ht[ht.length-1])}`,series:ser})}
   $('c-series').onchange=e=>{S.evSeries=e.target.value;commit()};$('c-method').onchange=e=>{S.method=e.target.value;commit()};
   document.querySelectorAll('.subnav a').forEach(a=>a.onclick=ev=>{ev.preventDefault();const t=$(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth'})});
   $('reset').onclick=()=>{S=fresh();S.tab='evidence';try{localStorage.removeItem(KEY)}catch(e){}commit()}}
