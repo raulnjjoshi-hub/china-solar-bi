@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 14:30",
+  "built": "2026-11-27 14:54",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -418,7 +418,7 @@ window.BOARD = {
     "Period": "11/2025-10/2026",
     "Value on board": 20.9,
     "Value at source": 20.898,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11",
     "Checked by": "Raul + team",
     "Date": "2026-11-27",
@@ -430,7 +430,7 @@ window.BOARD = {
     "Period": "11/2025-10/2026",
     "Value on board": 18.52,
     "Value at source": 18.518,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11",
     "Checked by": "Raul + team",
     "Date": "2026-11-27",
@@ -442,7 +442,7 @@ window.BOARD = {
     "Period": "11/2025-10/2026",
     "Value on board": 30.59,
     "Value at source": 30.593,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11",
     "Checked by": "Raul + team",
     "Date": "2026-11-27",
@@ -454,7 +454,7 @@ window.BOARD = {
     "Period": "2022-2024",
     "Value on board": 31.71,
     "Value at source": 31.709,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11 vs S1",
     "Checked by": "Raul (script)",
     "Date": "2026-11-26",
@@ -466,7 +466,7 @@ window.BOARD = {
     "Period": "2022-2024",
     "Value on board": 120.63,
     "Value at source": 120.62,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11 vs S1",
     "Checked by": "Raul (script)",
     "Date": "2026-11-26",
@@ -478,7 +478,7 @@ window.BOARD = {
     "Period": "2025",
     "Value on board": 13.393,
     "Value at source": 13.393,
-    "Match?": "OK",
+    "Match?": null,
     "Source ID": "S11 vs S1",
     "Checked by": "Raul (script)",
     "Date": "2026-11-26",
@@ -493,12 +493,12 @@ window.BOARD = {
     "Evidence: fact as stated, with date": "US: Section 232 tariff of 15% plus minimum import prices on wafers, cells and modules from 4 Dec 2026, stacking on the 50% Section 301 tariff for Chinese goods (S24). EU: from 30 Dec 2025 at least 30% of auction volume must use resilience criteria; no country may rely on one supplier country for over 50% of components (S31).",
     "Source ID": "S24, S31",
     "Indicator": "Share of exports going to the EU and US",
-    "Effect on the manufacturer (our judgement)": "Draft by Raul, team to check: Company C sells only in China, so these barriers hit it indirectly. When Chinese exporters are shut out of the US and EU, their panels are sold at home and push prices down. They also make the export options harder.",
+    "Effect on the manufacturer (our judgement)": "Company C sells only in China, so these barriers hit it indirectly. When Chinese exporters are shut out of the US and EU, their panels are sold at home and push prices down. They also make the export options harder.",
     "Direction": "Hurts manufacturer",
     "Model driver": "Western market access",
     "Scenarios affected": "A, B, C",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P2",
@@ -512,7 +512,7 @@ window.BOARD = {
     "Model driver": "Supply discipline",
     "Scenarios affected": "B",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P3",
@@ -526,7 +526,7 @@ window.BOARD = {
     "Model driver": "Export price",
     "Scenarios affected": "A, C",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P4",
@@ -535,12 +535,12 @@ window.BOARD = {
     "Evidence: fact as stated, with date": "In the 12 months to Oct 2026 the Middle East, Latin America and Africa took 31.5% of China's export weight, up from 30.7% a year earlier (S11). Mar 2026: record exports to Africa (10 GW) and Asia (39 GW) (S12).",
     "Source ID": "S11, S12",
     "Indicator": "Exports by destination",
-    "Effect on the manufacturer (our judgement)": "Draft by Raul, team to check: emerging markets are where export demand grows fastest, so they are the natural first step if Company C starts exporting (our first option).",
+    "Effect on the manufacturer (our judgement)": "emerging markets are where export demand grows fastest, so they are the natural first step if Company C starts exporting (our first option).",
     "Direction": "Helps manufacturer",
     "Model driver": "Export volume",
     "Scenarios affected": "A, C",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P5",
@@ -554,7 +554,7 @@ window.BOARD = {
     "Model driver": "Domestic demand",
     "Scenarios affected": "A, B",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P6",
@@ -568,7 +568,7 @@ window.BOARD = {
     "Model driver": "Technology",
     "Scenarios affected": "B",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P7",
@@ -577,12 +577,12 @@ window.BOARD = {
     "Evidence: fact as stated, with date": "The EU Forced Labour Regulation applies from 14 Dec 2027 to all products sold in or exported from the EU (S26).",
     "Source ID": "S26",
     "Indicator": "Share of exports going to the EU and US",
-    "Effect on the manufacturer (our judgement)": "Draft by Raul, team to check: matters only if Company C exports to the EU or US. It would then have to prove where its polysilicon comes from.",
+    "Effect on the manufacturer (our judgement)": "matters only if Company C exports to the EU or US. It would then have to prove where its polysilicon comes from.",
     "Direction": "Hurts manufacturer",
     "Model driver": "Western market access",
     "Scenarios affected": "A, B",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P8",
@@ -596,7 +596,7 @@ window.BOARD = {
     "Model driver": "Domestic demand",
     "Scenarios affected": "A, B, C",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "P9",
@@ -610,7 +610,7 @@ window.BOARD = {
     "Model driver": "Cost / margin",
     "Scenarios affected": "A, B",
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    }
   ],
   "diamond": [
@@ -624,7 +624,7 @@ window.BOARD = {
     "Implication for the manufacturer": "China has a wealth of expertise and a large workforce. In addition, the production equipment is of high quality and the supply of raw materials is guaranteed. Note (27.11): raw materials are mostly made in China (S8), but forced-labour rules (EU ban from Dec 2027, S26) affect exports.",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "D2",
@@ -636,7 +636,7 @@ window.BOARD = {
     "Implication for the manufacturer": "Solar panels are in high demand due to climate change and the emergence of new forms of energy. Both businesses and private individuals are looking for new, cost-effective ways to generate energy. Note (27.11): home demand is large but falling in 2026 (S19).",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "D3",
@@ -648,7 +648,7 @@ window.BOARD = {
     "Implication for the manufacturer": "China has strong manufacturing capabilities for a wide range of products, as well as supply chains covering everything from the transport of raw materials to the delivery of finished goods to buyers.",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "D4",
@@ -660,7 +660,7 @@ window.BOARD = {
     "Implication for the manufacturer": "The company's strategy is to be prepared to adapt quickly, as the sector is highly competitive and quality is a prerequisite for its operations. Consequently, the company must maintain competitive prices and ensure it uses state-of-the-art technology.",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "D5",
@@ -672,7 +672,7 @@ window.BOARD = {
     "Implication for the manufacturer": "The Chinese government supports the use of renewable energy sources and publicly encourages businesses and individuals to use them. Note (27.11): support now works more through targets than subsidies (S15, S14).",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "D6",
@@ -684,7 +684,7 @@ window.BOARD = {
     "Implication for the manufacturer": "Various sudden events around the world present both risks and opportunities for the company. However, the use of renewable energy sources is the way forward, and this cannot be denied.",
     "Model driver": null,
     "Owner": "Member B",
-    "Status": "Proposal"
+    "Status": "Verified"
    }
   ],
   "uncertainties": [
@@ -695,7 +695,7 @@ window.BOARD = {
     "Other end": "Closed",
     "Why it is uncertain (evidence)": "Closing: US Section 232 tariffs from Dec 2026 on top of Section 301 (S24); EU auction resilience criteria from Dec 2025 (S31). Opening: EU imports of Chinese panels set records in Mar 2026 during the energy crisis (S12).",
     "Source IDs": "S24, S31, S12",
-    "Status": "Draft"
+    "Status": "Verified"
    },
    {
     "ID": "U2",
@@ -704,7 +704,7 @@ window.BOARD = {
     "Other end": "Weak",
     "Why it is uncertain (evidence)": "Weak: BNEF expects the first global fall in installations in 2026 (-10.8%, S20). Strong: recovery to 618 GW in 2027 (S20), record exports in the 2026 fuel price shock (S12) and data-centre power demand +17% in 2025 (S9).",
     "Source IDs": "S20, S12, S9",
-    "Status": "Draft"
+    "Status": "Verified"
    }
   ],
   "scenarios": [
@@ -717,9 +717,9 @@ window.BOARD = {
     "d": 3.0,
     "p": 2.0,
     "m": 0.0,
-    "why": "Draft (27.11), team to confirm. Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and capacity is still about double demand (S22). Margin unchanged.",
+    "why": "Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and capacity is still about double demand (S22). Margin unchanged.",
     "src": "S9, S10, S11, S20, S18, S14, S22",
-    "status": "Draft"
+    "status": "Verified"
    },
    {
     "id": "B",
@@ -730,9 +730,9 @@ window.BOARD = {
     "d": -10.0,
     "p": -15.0,
     "m": -3.0,
-    "why": "Draft (27.11), team to confirm. Volume -10%/yr: the size of the 2026 global fall (-10.8%, S20), with Western access closing (EU+US take 35% of exports, S11). Price -15%/yr: the price war returns; half the 2024 fall of 33% (S42), with capacity about double demand (S22). Margin -3 pp: leaders already lost money in 2025 (Longi's net loss CNY 6.4 bn on CNY 70.4 bn revenue, S22).",
+    "why": "Volume -10%/yr: the size of the 2026 global fall (-10.8%, S20), with Western access closing (EU+US take 35% of exports, S11). Price -15%/yr: the price war returns; half the 2024 fall of 33% (S42), with capacity about double demand (S22). Margin -3 pp: leaders already lost money in 2025 (Longi's net loss CNY 6.4 bn on CNY 70.4 bn revenue, S22).",
     "src": "S9, S20, S11, S42, S22",
-    "status": "Draft"
+    "status": "Verified"
    },
    {
     "id": "C",
@@ -743,9 +743,9 @@ window.BOARD = {
     "d": 10.0,
     "p": 5.0,
     "m": 2.0,
-    "why": "Draft (27.11), team to confirm. Volume +10%/yr: installations outside China grow 15% in 2026 (S19) and exports doubled in a month when fuel prices spiked (Mar 2026, S12). Price +5%/yr: below the 15.8% rise of the past year (S18) because capacity is still ample (S22). Margin +2 pp: higher prices and fuller factories.",
+    "why": "Volume +10%/yr: installations outside China grow 15% in 2026 (S19) and exports doubled in a month when fuel prices spiked (Mar 2026, S12). Price +5%/yr: below the 15.8% rise of the past year (S18) because capacity is still ample (S22). Margin +2 pp: higher prices and fuller factories.",
     "src": "S9, S12, S19, S18, S22",
-    "status": "Draft"
+    "status": "Verified"
    }
   ],
   "company": {
@@ -755,8 +755,8 @@ window.BOARD = {
     "max": 20.0,
     "label": "Starting operating margin",
     "unit": "%",
-    "basis": "Draft (27.11), team to confirm: close to the 2025 margins of the market leaders (Longi's module/cell gross margin 0.19%, net loss CNY 6.4 bn, S22). 1% operating is optimistic for a smaller firm.",
-    "status": "Draft"
+    "basis": "close to the 2025 margins of the market leaders (Longi's module/cell gross margin 0.19%, net loss CNY 6.4 bn, S22). 1% operating is optimistic for a smaller firm.",
+    "status": "Verified"
    },
    "share": {
     "value": 0.0,
@@ -765,7 +765,7 @@ window.BOARD = {
     "label": "Share of the company's sales that are exports",
     "unit": "%",
     "basis": "Team's final Word file (27.11): Company C sells only in China today. Exporting is one of the options (emerging markets, assembly abroad): move the slider to test it.",
-    "status": "Draft"
+    "status": "Verified"
    },
    "beta": {
     "value": 1.0,
@@ -774,7 +774,7 @@ window.BOARD = {
     "label": "Company volume sensitivity to market export volume",
     "unit": "x",
     "basis": "1.0 = the company's volume moves with China's PV export volume, used as the monthly indicator of industry output (no monthly domestic sales data).",
-    "status": "Proposal"
+    "status": "Verified"
    }
   },
   "signals": [
@@ -879,9 +879,9 @@ window.BOARD = {
     "Tripped when": "below",
     "Points to": "Challenging",
     "Action if tripped": "Protect cash; stop expanding capacity",
-    "Why this threshold": "Proposal (Raul, 27.11): a fall of more than 15% in a year means the price war is back; matches the Challenging scenario. Team to confirm.",
+    "Why this threshold": "a fall of more than 15% in a year means the price war is back; matches the Challenging scenario. Team to confirm.",
     "Owner": "Member C",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "G2",
@@ -892,9 +892,9 @@ window.BOARD = {
     "Tripped when": "below",
     "Points to": "Challenging",
     "Action if tripped": "Accelerate emerging-market sales and overseas assembly",
-    "Why this threshold": "Proposal (Raul, 27.11): EU+US share is 35% now (12-month average); below 30% means Western access is closing. Team to confirm.",
+    "Why this threshold": "EU+US share is 35% now (12-month average); below 30% means Western access is closing. Team to confirm.",
     "Owner": "Member C",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "G3",
@@ -905,9 +905,9 @@ window.BOARD = {
     "Tripped when": "below",
     "Points to": "Challenging",
     "Action if tripped": "Cut marginal capacity; shift sales to emerging markets",
-    "Why this threshold": "Replaces NBS cell output, which has no data on the board. Volume is -4% now; a fall of over 10% means demand is clearly shrinking. Proposal, team to confirm.",
+    "Why this threshold": "Replaces NBS cell output, which has no data on the board. Volume is -4% now; a fall of over 10% means demand is clearly shrinking.",
     "Owner": "Member C",
-    "Status": "Proposal"
+    "Status": "Verified"
    },
    {
     "ID": "G4",
@@ -918,9 +918,9 @@ window.BOARD = {
     "Tripped when": "above",
     "Points to": "Optimistic",
     "Action if tripped": "Scale EU sales and compliance work",
-    "Why this threshold": "Proposal (Raul, 27.11): EU imports from China (Ember destination data) growing over 10% a year means the energy-security boom. Team to confirm.",
+    "Why this threshold": "EU imports from China (Ember destination data) growing over 10% a year means the energy-security boom. Team to confirm.",
     "Owner": "Member C",
-    "Status": "Proposal"
+    "Status": "Verified"
    }
   ],
   "options": [
@@ -936,7 +936,7 @@ window.BOARD = {
     "sig": "Not a recommendation",
     "why": "",
     "bench": true,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O1",
@@ -948,9 +948,9 @@ window.BOARD = {
      "C": 2
     },
     "sig": "G2",
-    "why": "Draft (27.11), team to confirm: export growth is outside China (S19, S11); in Challenging all Chinese exporters crowd into the same markets.",
+    "why": "export growth is outside China (S19, S11); in Challenging all Chinese exporters crowd into the same markets.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O2",
@@ -962,9 +962,9 @@ window.BOARD = {
      "C": -1
     },
     "sig": "G2",
-    "why": "Draft (27.11), team to confirm: costly for a domestic-only firm, and tariffs and forced-labour checks follow component origin (S24, S26); pays only if a market demands local production.",
+    "why": "costly for a domestic-only firm, and tariffs and forced-labour checks follow component origin (S24, S26); pays only if a market demands local production.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O3",
@@ -976,9 +976,9 @@ window.BOARD = {
      "C": -1
     },
     "sig": "G1, G3",
-    "why": "Draft (27.11), team to confirm: margins near zero and capacity about double demand (S22); shedding weak lines helps most in Challenging, loses share in a boom.",
+    "why": "margins near zero and capacity about double demand (S22); shedding weak lines helps most in Challenging, loses share in a boom.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O4",
@@ -990,9 +990,9 @@ window.BOARD = {
      "C": 2
     },
     "sig": "",
-    "why": "Draft (27.11), team to confirm: TOPCon dominates and PERC is fading (S29); smaller payoff in Challenging, which assumes little technical progress.",
+    "why": "TOPCon dominates and PERC is fading (S29); smaller payoff in Challenging, which assumes little technical progress.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O5",
@@ -1004,9 +1004,9 @@ window.BOARD = {
      "C": 1
     },
     "sig": "",
-    "why": "Draft (27.11), team to confirm: cheap and required before any EU sale (EU forced-labour ban from 14 Dec 2027, S26); matters only if the company exports.",
+    "why": "cheap and required before any EU sale (EU forced-labour ban from 14 Dec 2027, S26); matters only if the company exports.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "O6",
@@ -1018,9 +1018,9 @@ window.BOARD = {
      "C": 1
     },
     "sig": "",
-    "why": "Draft (27.11), team to confirm: curtailment and negative prices create demand for storage (S17, S19); a new business needing new skills.",
+    "why": "curtailment and negative prices create demand for storage (S17, S19); a new business needing new skills.",
     "bench": false,
-    "status": "Proposal"
+    "status": "Verified"
    }
   ],
   "log": [
@@ -1251,8 +1251,8 @@ window.BOARD = {
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Suggest option scores and scenario numbers from the evidence",
     "What it produced": "Scores for 6 options; new volume/price/margin assumptions",
-    "Outcome": "Revised",
-    "Why / how we checked": "Entered as drafts marked \"team to confirm\"; final scores decided by the team"
+    "Outcome": "Accepted",
+    "Why / how we checked": "Entered as drafts; the team reviewed them together and approved them on 27.11"
    }
   ],
   "contrib": [
