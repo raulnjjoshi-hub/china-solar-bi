@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 15:23",
+  "built": "2026-11-27 15:25",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -67,8 +67,8 @@ window.BOARD = {
     "Tech lead view": "Context, not target"
    }
   ],
-  "targetDecision": null,
-  "targetReason": null,
+  "targetDecision": "F1: China exports of PV cells and modules (volume, with value alongside)",
+  "targetReason": "Monthly, long and public, and the best available monthly indicator of the Chinese PV industry (no monthly domestic sales data). Taken from Ember (S11), which republishes China customs data to Oct 2026; UN Comtrade (S1) monthly data ends in 2024 and is used as a cross-check.",
   "sources": [
    {
     "ID": "S1",
