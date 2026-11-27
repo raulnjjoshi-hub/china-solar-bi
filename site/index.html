@@ -591,11 +591,14 @@ const AI_LOG=[
  {s:'Design, 24.11',q:'Restyle the board without changing any numbers',a:'New design; MAPE shown with one decimal instead of two',o:'Revised',c:'Scripted comparison of every displayed number old vs new; precision restored'},
  {s:'Data, 26.11',q:'Find monthly data that reaches 2026, so the memo can look to 2027',a:'Ember China Solar Exports (customs, to Oct 2026, by destination) and Ember monthly China solar generation',o:'Accepted',c:'Checksums browser vs file identical; Ember vs Comtrade differ by 0.001% over 36 months and 0.00004% for 2025'},
  {s:'Forecast, 26.11',q:'Refit the forecasts on the longer series',a:'Trend methods failed on exports (30% error) once volumes levelled off',o:'Revised',c:'Holdout picked the 12-month average for exports; trend + seasonality for domestic generation (7.3% error)'},
- {s:'Design, 24.11',q:'Count verified sources',a:'Said 10 of 10 verified',o:'Revised',c:'"Candidate - not verified" matched the word "verified"; count fixed to 3'}];
+ {s:'Design, 24.11',q:'Count verified sources',a:'Said 10 of 10 verified',o:'Revised',c:'"Candidate - not verified" matched the word "verified"; count fixed to 3'},
+ {s:'Evidence, 26.11',q:'Find sources for PESTLE, Diamond and the scenario assumptions',a:'34 dated facts from 23 sources',o:'Revised',c:'Facts paraphrased with links for the team to open; later trimmed to the 20 strongest sources'},
+ {s:'Narrative, 27.11',q:'Align the team Word file with the board',a:'Tracked changes and a comment in the Word file',o:'Accepted',c:'Team reviewed each tracked change together and accepted them'},
+ {s:'Strategy, 27.11',q:'Suggest option scores and scenario numbers from the evidence',a:'Scores for 6 options; new volume, price and margin assumptions',o:'Revised',c:'Entered as drafts marked team to confirm; the team decides the final values'}];
 const PROMPTS=[
  ['Add a news signal','Read this article: <URL>. Quote only the facts it states, with the date. Propose effects on volume, price and margin for each scenario and explain each as a judgement.'],
- ['Add a destination split','Fetch China PV exports by partner from Comtrade and add EU, US, India and rest-of-world shares, so the "share of exports to the EU and US" signpost gets a reading.'],
- ['Refresh the data','Run the workflow manually (Actions > Run workflow) and check the new snapshot against the Comtrade website for two months.'],
+ ['Add a domestic installations series','Add NEA monthly new solar installations as a second domestic series, so domestic demand is not judged only from generation (see Limits).'],
+ ['Refresh the data','Run the workflow manually (Actions > Run workflow) and check two months of the new snapshot against the Ember China solar export explorer.'],
  ['Stress the scenarios','Find the volume, price and margin assumptions at which the base scenario becomes worse than the challenging one, and report which signposts would show us moving there.'],
  ['Check the work','Act as a sceptical reviewer: recompute the holdout errors independently, list every claim that rests on judgement, and say which assumption changes the result most.']];
 const LIMITS=[

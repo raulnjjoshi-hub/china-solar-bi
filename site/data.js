@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 14:00",
+  "built": "2026-11-27 14:08",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -962,6 +962,54 @@ window.BOARD = {
     "Effect on quality": "Clear scope before building",
     "Screenshot / version link": null,
     "Owner": "Raul"
+   },
+   {
+    "Stage": "2",
+    "Date": "2026-11-24",
+    "Title": "Prototype with real data",
+    "Issue or feedback": "Shells could not reach Comtrade; free API gives one period per call",
+    "Changes made": "Captured China monthly PV exports (HS 854142+854143) via the browser; processed with fetch.py --from-raw; team scenarios and three news signals added",
+    "Prompt or code example": "python scripts/fetch.py --from-raw data/raw/comtrade/2026-11-24.json",
+    "Verification performed": "Browser vs file checksums identical; monthly 2024 sum = annual total; 2025 forecast vs 2025 annual actual (volume trend -0.1%)",
+    "Effect on quality": "Board runs on real, traceable data; forecast validated twice",
+    "Screenshot / version link": "docs/screenshots/v0-*",
+    "Owner": "Raul"
+   },
+   {
+    "Stage": "3",
+    "Date": "2026-11-25",
+    "Title": "Condensed structure and UI polish",
+    "Issue or feedback": "9 tabs; forecast, scenarios and news on separate pages; generic look",
+    "Changes made": "Design tokens, bundled font, KPI row; cut to 5 tabs (Overview, Outlook, Strategy, Context, Evidence)",
+    "Prompt or code example": "Prompt: \"Restyle the board without changing any numbers\"",
+    "Verification performed": "Scripted old-vs-new comparison of every displayed number; found and fixed verified-count bug (10 -> 3)",
+    "Effect on quality": "Easier to read; same numbers",
+    "Screenshot / version link": "docs/screenshots/ui-before-*, ui-after-*, v2-*",
+    "Owner": "Raul"
+   },
+   {
+    "Stage": "4",
+    "Date": "2026-11-26",
+    "Title": "Data to 2026, forecast to 2027",
+    "Issue or feedback": "Memo spoke about 2025, decision is about 2027; Comtrade monthly data ends 2024-12",
+    "Changes made": "Switched to Ember China Solar Exports (customs, to Oct 2026, by destination) + Ember China solar generation; forecast to Dec 2027; Comtrade kept as cross-check",
+    "Prompt or code example": "python scripts/fetch.py --offline; TARGET_END=\"2027-12\"",
+    "Verification performed": "Ember vs Comtrade 2022-2024 within 0.003%; holdout: exports 12-month average 18.5% vs benchmark 20.9%, trend 30.6% rejected",
+    "Effect on quality": "Memo and scenarios speak about 2027 with data one month old",
+    "Screenshot / version link": "docs/screenshots/v3-*",
+    "Owner": "Raul"
+   },
+   {
+    "Stage": "4b",
+    "Date": "2026-11-27",
+    "Title": "Team narrative, workbook and board aligned",
+    "Issue or feedback": "Final Word file disagreed with the board (domestic-only company, old numbers, PESTLE/Diamond without evidence)",
+    "Changes made": "Export share 0%; PESTLE/Diamond evidence and source IDs; memo peak and record from data; Word returned with tracked changes (team accepted); scenario numbers and option scores drafted from evidence; sources trimmed to 20",
+    "Prompt or code example": "Prompt: \"Unify all of the places where they disagree\"",
+    "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors",
+    "Effect on quality": "One consistent story; every framework row has a sourced fact",
+    "Screenshot / version link": "docs/Business_Intelligence_final.docx",
+    "Owner": "Raul + team"
    }
   ],
   "usertest": [
@@ -1032,7 +1080,108 @@ window.BOARD = {
     "Fixed in version": null
    }
   ],
-  "ai": [],
+  "ai": [
+   {
+    "ID": "AI1",
+    "Date": "2026-11-23",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Choose a forecastable indicator for the case",
+    "What it produced": "Five candidate indicators with pros and cons; recommended Comtrade exports",
+    "Outcome": "Accepted",
+    "Why / how we checked": "Team kept the choice open in the workbook; data availability tested before committing"
+   },
+   {
+    "ID": "AI2",
+    "Date": "2026-11-23",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Generate the team workbook template",
+    "What it produced": "18-sheet workbook",
+    "Outcome": "Revised",
+    "Why / how we checked": "Read-back check found Options text shifted one column; generator fixed before team use"
+   },
+   {
+    "ID": "AI3",
+    "Date": "2026-11-24",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Review the team scenarios",
+    "What it produced": "Proposed replacing the base scenario with a quadrant design",
+    "Outcome": "Rejected",
+    "Why / how we checked": "Team kept its own three scenarios"
+   },
+   {
+    "ID": "AI4",
+    "Date": "2026-11-24",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Fact-check figures in the scenario text",
+    "What it produced": "Plan period 2026-2031 wrong (2026-2030)",
+    "Outcome": "Accepted",
+    "Why / how we checked": "Opened the gov.cn page; period corrected"
+   },
+   {
+    "ID": "AI5",
+    "Date": "2026-11-24",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Restyle the board without changing numbers",
+    "What it produced": "New design, but MAPE rounded to one decimal",
+    "Outcome": "Revised",
+    "Why / how we checked": "Scripted comparison of every displayed number; precision restored"
+   },
+   {
+    "ID": "AI6",
+    "Date": "2026-11-26",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Find monthly data reaching 2026",
+    "What it produced": "Ember China Solar Exports and Ember China solar generation",
+    "Outcome": "Accepted",
+    "Why / how we checked": "Checksums browser vs file identical; Ember matches Comtrade within 0.003%"
+   },
+   {
+    "ID": "AI7",
+    "Date": "2026-11-26",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Refit forecasts on the longer series",
+    "What it produced": "Trend methods failed on exports (30% error)",
+    "Outcome": "Revised",
+    "Why / how we checked": "Holdout test chose the 12-month average instead"
+   },
+   {
+    "ID": "AI8",
+    "Date": "2026-11-26",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Find sources for PESTLE, Diamond and scenarios",
+    "What it produced": "Evidence pack: 34 dated facts, 23 sources",
+    "Outcome": "Revised",
+    "Why / how we checked": "Facts paraphrased with links; team to open each link; later trimmed to the 20 strongest sources"
+   },
+   {
+    "ID": "AI9",
+    "Date": "2026-11-27",
+    "Member": "Raul + team",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Align the Word file with the board",
+    "What it produced": "Tracked changes and one comment in the team Word file",
+    "Outcome": "Accepted",
+    "Why / how we checked": "Team reviewed every tracked change together on 27.11 and accepted them"
+   },
+   {
+    "ID": "AI10",
+    "Date": "2026-11-27",
+    "Member": "Raul",
+    "Tool and model": "Claude (Anthropic)",
+    "Purpose": "Suggest option scores and scenario numbers from the evidence",
+    "What it produced": "Scores for 6 options; new volume/price/margin assumptions",
+    "Outcome": "Revised",
+    "Why / how we checked": "Entered as drafts marked \"team to confirm\"; final scores decided by the team"
+   }
+  ],
   "contrib": [
    {
     "Member": "Raul Joshi",

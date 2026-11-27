@@ -53,10 +53,12 @@ and screenshots so the two can be cross-referenced.
   narrative numbers (1,300 kt record; 1,285/1,305/1,245 kt) came from the old Comtrade data; PESTLE and Diamond had no
   evidence or sources and some claims contradicted 2025-2026 facts; a signpost had no data.
 - **Changes:** export share set to 0% (exporting is an option to test). Team's PESTLE/Diamond text placed next to dated
-  evidence and source IDs (S8, S12-S37); notes added where evidence disagrees. Memo: March peak and record computed from
+  evidence and source IDs; notes added where evidence disagrees. Memo: March peak and record computed from
   data; "demand for PV cells" corrected to exports. Word file returned with tracked changes and a comment for the team
-  (docs/Business_Intelligence_final_tracked.docx). Sources the team considered but did not use are listed as such (S38-S40).
-- **Verification:** memo figures re-read from the rendered board; Word file validated and rendered; no console errors.
+  (docs/Business_Intelligence_final_tracked.docx). Then: scenario volume/price/margin and option scores drafted from the evidence (prices now rise in Base and
+  Optimistic, as 2025-26 data show; starting margin 1%); sources trimmed from 42 to the 20 that carry the board's claims.
+- **Verification:** memo figures re-read from the rendered board; scripted check that every source ID cited on the board
+  exists in Sources (0 missing); Word file validated and rendered; no console errors.
 - **Effect:** one story across the Word file, workbook and board; every PESTLE and Diamond row now has a sourced fact.
 
 ## Stage 5: User test and revision (planned 27.11)
