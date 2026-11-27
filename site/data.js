@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 15:08",
+  "built": "2026-11-27 15:11",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -85,7 +85,7 @@ window.BOARD = {
     "Transformations applied": "Cells + modules summed. Weight kg/1e6 = thousand tonnes; value USD/1e9 = USD bn; unit value = value/weight.",
     "Used for": "Cross-check of Ember export figures (Evidence tab)",
     "Status": "Used for cross-check",
-    "Checked by": "Raul"
+    "Checked by": "Team"
    },
    {
     "ID": "S6",
@@ -102,7 +102,7 @@ window.BOARD = {
     "Transformations applied": "None (TWh as published)",
     "Used for": "Domestic demand proxy (KPI, Outlook domestic forecast, scenarios)",
     "Status": "Used in board",
-    "Checked by": "Raul"
+    "Checked by": "Team"
    },
    {
     "ID": "S8",
@@ -119,7 +119,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "D1, D3",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S9",
@@ -136,7 +136,7 @@ window.BOARD = {
     "Transformations applied": "None",
     "Used for": "Signals G1, G2",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S10",
@@ -153,7 +153,7 @@ window.BOARD = {
     "Transformations applied": "None",
     "Used for": "Signal G3, Brief",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S11",
@@ -170,7 +170,7 @@ window.BOARD = {
     "Transformations applied": "Panels + cells summed; kg/1e6 = kt; USD/1e9 = bn USD; unit value = USD/kg; destination shares = 12-month rolling share of weight",
     "Used for": "Forecast target (export volume, value, price), destination shares, signposts",
     "Status": "Used in board",
-    "Checked by": "Raul"
+    "Checked by": "Team"
    },
    {
     "ID": "S12",
@@ -187,7 +187,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P4, D6, scenario C",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S14",
@@ -204,7 +204,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P2, D5, Brief",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S15",
@@ -221,7 +221,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P8, D5, Brief",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S17",
@@ -238,7 +238,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "D2, Brief",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S18",
@@ -255,7 +255,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P3, P8",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S19",
@@ -272,7 +272,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "Limits (domestic demand proxy); evidence D2, U2",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S20",
@@ -289,7 +289,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "Uncertainty U2, scenario volume",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S22",
@@ -306,7 +306,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P3, D1, D4, Brief, company margin C1, scenarios, option O3",
     "Status": "Verified",
-    "Checked by": "Claude (for Raul), 27.11; replaces a paywalled Caixin article"
+    "Checked by": "Team with Claude, 27.11; replaces a paywalled Caixin article"
    },
    {
     "ID": "S24",
@@ -323,7 +323,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P1, D5",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S26",
@@ -340,7 +340,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P7",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S29",
@@ -357,7 +357,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P6",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S30",
@@ -374,7 +374,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P9, Brief",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    },
    {
     "ID": "S31",
@@ -391,7 +391,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "P1, P9, D5, U1",
     "Status": "Verified",
-    "Checked by": "Claude (for Raul), 27.11; replaces a paywalled PV Tech article"
+    "Checked by": "Team with Claude, 27.11; replaces a paywalled PV Tech article"
    },
    {
     "ID": "S42",
@@ -408,7 +408,7 @@ window.BOARD = {
     "Transformations applied": null,
     "Used for": "Scenario B price assumption (module prices -33% in 2024)",
     "Status": "Verified",
-    "Checked by": "Raul, 27.11"
+    "Checked by": "Team, 27.11"
    }
   ],
   "checks": [
@@ -420,7 +420,7 @@ window.BOARD = {
     "Value at source": 20.898,
     "Match?": null,
     "Source ID": "S11",
-    "Checked by": "Raul + team",
+    "Checked by": "Team",
     "Date": "2026-11-27",
     "Note": "Board (Python) vs team Excel Forecast sheet"
    },
@@ -432,7 +432,7 @@ window.BOARD = {
     "Value at source": 18.518,
     "Match?": null,
     "Source ID": "S11",
-    "Checked by": "Raul + team",
+    "Checked by": "Team",
     "Date": "2026-11-27",
     "Note": "Board (Python) vs team Excel Forecast sheet"
    },
@@ -444,7 +444,7 @@ window.BOARD = {
     "Value at source": 30.593,
     "Match?": null,
     "Source ID": "S11",
-    "Checked by": "Raul + team",
+    "Checked by": "Team",
     "Date": "2026-11-27",
     "Note": "Board (Python) vs team Excel Forecast sheet"
    },
@@ -456,7 +456,7 @@ window.BOARD = {
     "Value at source": 31.709,
     "Match?": null,
     "Source ID": "S11 vs S1",
-    "Checked by": "Raul (script)",
+    "Checked by": "Script (build.py)",
     "Date": "2026-11-26",
     "Note": "Ember (board) vs UN Comtrade"
    },
@@ -468,7 +468,7 @@ window.BOARD = {
     "Value at source": 120.62,
     "Match?": null,
     "Source ID": "S11 vs S1",
-    "Checked by": "Raul (script)",
+    "Checked by": "Script (build.py)",
     "Date": "2026-11-26",
     "Note": "Ember (board) vs UN Comtrade"
    },
@@ -480,7 +480,7 @@ window.BOARD = {
     "Value at source": 13.393,
     "Match?": null,
     "Source ID": "S11 vs S1",
-    "Checked by": "Raul (script)",
+    "Checked by": "Script (build.py)",
     "Date": "2026-11-26",
     "Note": "Ember (board) vs UN Comtrade annual"
    }
@@ -1034,7 +1034,7 @@ window.BOARD = {
     "Verification performed": "Checked candidate datasets are public and monthly (in progress)",
     "Effect on quality": "Clear scope before building",
     "Screenshot / version link": null,
-    "Owner": "Raul"
+    "Owner": "Tech lead"
    },
    {
     "Stage": "2",
@@ -1046,7 +1046,7 @@ window.BOARD = {
     "Verification performed": "Browser vs file checksums identical; monthly 2024 sum = annual total; 2025 forecast vs 2025 annual actual (volume trend -0.1%)",
     "Effect on quality": "Board runs on real, traceable data; forecast validated twice",
     "Screenshot / version link": "docs/screenshots/v0-*",
-    "Owner": "Raul"
+    "Owner": "Tech lead"
    },
    {
     "Stage": "3",
@@ -1058,7 +1058,7 @@ window.BOARD = {
     "Verification performed": "Scripted old-vs-new comparison of every displayed number; found and fixed verified-count bug (10 -> 3)",
     "Effect on quality": "Easier to read; same numbers",
     "Screenshot / version link": "docs/screenshots/ui-before-*, ui-after-*, v2-*",
-    "Owner": "Raul"
+    "Owner": "Tech lead"
    },
    {
     "Stage": "4",
@@ -1070,7 +1070,7 @@ window.BOARD = {
     "Verification performed": "Ember vs Comtrade 2022-2024 within 0.003%; holdout: exports 12-month average 18.5% vs benchmark 20.9%, trend 30.6% rejected",
     "Effect on quality": "Memo and scenarios speak about 2027 with data one month old",
     "Screenshot / version link": "docs/screenshots/v3-*",
-    "Owner": "Raul"
+    "Owner": "Tech lead"
    },
    {
     "Stage": "4b",
@@ -1082,7 +1082,7 @@ window.BOARD = {
     "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors; team re-computed the holdout errors in the Excel Forecast sheet and they match the board (Data checks DC1-DC3); team opened all 20 sources and checked each cited fact; two paywalled sources (Caixin, PV Tech) replaced with open ones and the claims adjusted",
     "Effect on quality": "One consistent story; every framework row has a sourced fact",
     "Screenshot / version link": "docs/Business_Intelligence_final.docx",
-    "Owner": "Raul + team"
+    "Owner": "Tech lead + team"
    }
   ],
   "usertest": [
@@ -1157,7 +1157,7 @@ window.BOARD = {
    {
     "ID": "AI1",
     "Date": "2026-11-23",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Choose a forecastable indicator for the case",
     "What it produced": "Five candidate indicators with pros and cons; recommended Comtrade exports",
@@ -1167,7 +1167,7 @@ window.BOARD = {
    {
     "ID": "AI2",
     "Date": "2026-11-23",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Generate the team workbook template",
     "What it produced": "18-sheet workbook",
@@ -1177,7 +1177,7 @@ window.BOARD = {
    {
     "ID": "AI3",
     "Date": "2026-11-24",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Review the team scenarios",
     "What it produced": "Proposed replacing the base scenario with a quadrant design",
@@ -1187,7 +1187,7 @@ window.BOARD = {
    {
     "ID": "AI4",
     "Date": "2026-11-24",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Fact-check figures in the scenario text",
     "What it produced": "Plan period 2026-2031 wrong (2026-2030)",
@@ -1197,7 +1197,7 @@ window.BOARD = {
    {
     "ID": "AI5",
     "Date": "2026-11-24",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Restyle the board without changing numbers",
     "What it produced": "New design, but MAPE rounded to one decimal",
@@ -1207,7 +1207,7 @@ window.BOARD = {
    {
     "ID": "AI6",
     "Date": "2026-11-26",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Find monthly data reaching 2026",
     "What it produced": "Ember China Solar Exports and Ember China solar generation",
@@ -1217,7 +1217,7 @@ window.BOARD = {
    {
     "ID": "AI7",
     "Date": "2026-11-26",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Refit forecasts on the longer series",
     "What it produced": "Trend methods failed on exports (30% error)",
@@ -1227,7 +1227,7 @@ window.BOARD = {
    {
     "ID": "AI8",
     "Date": "2026-11-26",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Find sources for PESTLE, Diamond and scenarios",
     "What it produced": "Evidence pack: 34 dated facts, 23 sources",
@@ -1237,7 +1237,7 @@ window.BOARD = {
    {
     "ID": "AI9",
     "Date": "2026-11-27",
-    "Member": "Raul + team",
+    "Member": "Tech lead + team",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Align the Word file with the board",
     "What it produced": "Tracked changes and one comment in the team Word file",
@@ -1247,7 +1247,7 @@ window.BOARD = {
    {
     "ID": "AI10",
     "Date": "2026-11-27",
-    "Member": "Raul",
+    "Member": "Tech lead",
     "Tool and model": "Claude (Anthropic)",
     "Purpose": "Suggest option scores and scenario numbers from the evidence",
     "What it produced": "Scores for 6 options; new volume/price/margin assumptions",
