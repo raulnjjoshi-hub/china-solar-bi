@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 14:55",
+  "built": "2026-11-27 15:08",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -15,7 +15,7 @@ window.BOARD = {
    "Key question": "Will demand for Chinese solar panels keep growing, at what prices, and which moves (export expansion, capacity) are safe in every plausible future?",
    "Forecast horizon": "To December 2027 (14 months ahead), monthly data",
    "Scenario horizon": "To 2030",
-   "Why this context matters": "Operating in China needs close attention to regulation, which is strict and changing: new solar projects moved to market pricing in June 2025 (S15) and the PV export tax rebate ended in April 2026 (S14). Competition is fierce: capacity is nearly double global demand and the largest makers lost money in 2025 (S22), so the company must stand out on price and innovation. Climate policy supports solar: carbon reduction is a target of the 15th Five-Year Plan (S10), China aims for 3,600 GW of wind and solar by 2035 (S30) and installed a record 315 GW of solar in 2025 (S17), although new installations are falling in 2026 (S19).",
+   "Why this context matters": "Operating in China needs close attention to regulation, which is strict and changing: new solar projects moved to market pricing in June 2025 (S15) and the PV export tax rebate ended in April 2026 (S14). Competition is fierce: the largest makers lost money in 2025, with gross margins around 1% (S22), so the company must stand out on price and innovation. Climate policy supports solar: carbon reduction is a target of the 15th Five-Year Plan (S10), China aims for 3,600 GW of wind and solar by 2035 (S30) and installed a record 315 GW of solar in 2025 (S17), although new installations are falling in 2026 (S19).",
    "Data mode": "Dated snapshot, refreshed monthly by a scheduled GitHub Action; the date is shown on the board",
    "Submission name": "Group7_China_RenewableEnergy",
    "Deadline": "29.11.2026"
@@ -118,8 +118,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "D1, D3",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S9",
@@ -136,7 +136,7 @@ window.BOARD = {
     "Transformations applied": "None",
     "Used for": "Signals G1, G2",
     "Status": "Verified",
-    "Checked by": "Claude"
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S10",
@@ -153,7 +153,7 @@ window.BOARD = {
     "Transformations applied": "None",
     "Used for": "Signal G3, Brief",
     "Status": "Verified",
-    "Checked by": "Claude"
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S11",
@@ -186,8 +186,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P4, D6, scenario C",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S14",
@@ -203,8 +203,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P2, D5, Brief",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S15",
@@ -220,8 +220,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P8, D5, Brief",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S17",
@@ -237,8 +237,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "D2, Brief",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S18",
@@ -254,8 +254,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P3, P8",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S19",
@@ -271,8 +271,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "Limits (domestic demand proxy); evidence D2, U2",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S20",
@@ -288,25 +288,25 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "Uncertainty U2, scenario volume",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S22",
-    "Name (exact table or article title)": "China's solar price war keeps Longi in the red (29 Apr 2026)",
-    "Provider / publisher": "Caixin Global",
+    "Name (exact table or article title)": "Two Solar Giants Report Another Difficult Year (Longi and Trina 2025 results, 3 May 2026)",
+    "Provider / publisher": "Developments Today (reporting pv magazine)",
     "Dataset code / table": null,
-    "URL (table-level link)": "https://www.caixinglobal.com/2026-04-29/chinas-solar-price-war-keeps-longi-in-the-red-102439230.html",
+    "URL (table-level link)": "https://developmentstoday.com/energy/longi-trina-solar-losses-margin-pressure-chinese-pv-2025-results",
     "Variables and filters": null,
     "Unit": null,
     "Frequency": null,
     "Coverage (from-to)": null,
-    "Access date": "2026-11-26",
+    "Access date": "2026-11-27",
     "Missing values and flags": null,
     "Transformations applied": null,
-    "Used for": "P3, D1, D4, Brief",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Used for": "P3, D1, D4, Brief, company margin C1, scenarios, option O3",
+    "Status": "Verified",
+    "Checked by": "Claude (for Raul), 27.11; replaces a paywalled Caixin article"
    },
    {
     "ID": "S24",
@@ -322,8 +322,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P1, D5",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S26",
@@ -339,8 +339,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P7",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S29",
@@ -356,8 +356,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P6",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S30",
@@ -373,25 +373,25 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P9, Brief",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    },
    {
     "ID": "S31",
-    "Name (exact table or article title)": "EU adds further solar PV manufacturing support to NZIA (27 May 2025)",
-    "Provider / publisher": "PV Tech",
+    "Name (exact table or article title)": "Implementing non-price criteria in renewable energy auctions (position paper, 7 Oct 2025)",
+    "Provider / publisher": "SolarPower Europe",
     "Dataset code / table": null,
-    "URL (table-level link)": "https://www.pv-tech.org/eu-adds-further-solar-pv-manufacturing-support-to-nzia/",
+    "URL (table-level link)": "https://www.solarpowereurope.org/advocacy/position-papers/implementing-non-price-criteria-in-renewable-energy-auctions",
     "Variables and filters": null,
     "Unit": null,
     "Frequency": null,
     "Coverage (from-to)": null,
-    "Access date": "2026-11-26",
+    "Access date": "2026-11-27",
     "Missing values and flags": null,
     "Transformations applied": null,
-    "Used for": "P1, P9, D5",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Used for": "P1, P9, D5, U1",
+    "Status": "Verified",
+    "Checked by": "Claude (for Raul), 27.11; replaces a paywalled PV Tech article"
    },
    {
     "ID": "S42",
@@ -407,8 +407,8 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "Scenario B price assumption (module prices -33% in 2024)",
-    "Status": "Candidate - not verified",
-    "Checked by": null
+    "Status": "Verified",
+    "Checked by": "Raul, 27.11"
    }
   ],
   "checks": [
@@ -490,7 +490,7 @@ window.BOARD = {
     "ID": "P1",
     "Factor": "Political",
     "Driver (what we watch)": "Trade defence against Chinese PV in the US, EU and India (tariffs, anti-dumping, local-content rules)",
-    "Evidence: fact as stated, with date": "US: Section 232 tariff of 15% plus minimum import prices on wafers, cells and modules from 4 Dec 2026, stacking on the 50% Section 301 tariff for Chinese goods (S24). EU: from 30 Dec 2025 at least 30% of auction volume must use resilience criteria; no country may rely on one supplier country for over 50% of components (S31).",
+    "Evidence: fact as stated, with date": "US: Section 232 tariff of 15% plus minimum import prices on wafers, cells and modules from 4 Dec 2026, stacking on the 50% Section 301 tariff for Chinese goods (S24). EU: under NZIA rules adopted 23 May 2025, from 2026 at least 30% of yearly auction volume (or 6 GW) must use non-price criteria such as resilience; over 80% of EU solar components come from abroad, mainly China (S31).",
     "Source ID": "S24, S31",
     "Indicator": "Share of exports going to the EU and US",
     "Effect on the manufacturer (our judgement)": "Company C sells only in China, so these barriers hit it indirectly. When Chinese exporters are shut out of the US and EU, their panels are sold at home and push prices down. They also make the export options harder.",
@@ -518,7 +518,7 @@ window.BOARD = {
     "ID": "P3",
     "Factor": "Economic",
     "Driver (what we watch)": "Overcapacity and price war along the supply chain (polysilicon to modules)",
-    "Evidence: fact as stated, with date": "Capacity is nearly double global demand; Longi's 2025 net loss was CNY 6.4 bn and its module/cell gross margin 0.19% (S22). Prices are recovering: TOPCon modules 0.749 yuan/W on 26 May 2026, +15.8% on June 2025 (S18).",
+    "Evidence: fact as stated, with date": "Longi's 2025 net loss was CNY 6.4 bn (gross margin 0.81%) and Trina's CNY 7.0 bn (gross margin 1.02%) (S22). Prices are recovering: TOPCon modules 0.749 yuan/W on 26 May 2026, +15.8% on June 2025 (S18).",
     "Source ID": "S22, S18",
     "Indicator": "Export unit value (value / volume)",
     "Effect on the manufacturer (our judgement)": "China has a large market, thanks to its large population and vast geographical area. China has recently developed its economy significantly and has emerged as one of the world's most significant economies. This may lead to competition within the sector, even though it is still relatively new. However, costs can be reduced where possible through large production volumes and the potential purchase price of raw materials. Note (27.11): competition has become a price war; the largest makers lost money in 2025 (S22).",
@@ -602,7 +602,7 @@ window.BOARD = {
     "ID": "P9",
     "Factor": "Environmental",
     "Driver (what we watch)": "Carbon-footprint requirements in buyer markets; China's climate targets",
-    "Evidence: fact as stated, with date": "China's 2035 NDC (24 Sep 2025): 3,600 GW of wind and solar and a 30% non-fossil share of energy (S30). EU auctions include sustainability criteria from 30 Dec 2025 (S31).",
+    "Evidence: fact as stated, with date": "China's 2035 NDC (24 Sep 2025): 3,600 GW of wind and solar and a 30% non-fossil share of energy (S30). EU auctions must use non-price criteria, including sustainability, for at least 30% of volume from 2026 (S31).",
     "Source ID": "S30, S31",
     "Indicator": "China solar generation",
     "Effect on the manufacturer (our judgement)": "Solar panels are the energy source of the future, alongside hydro and wind power. This is due to increasingly stringent regulations concerning fossil fuels and their use. In the manufacture of solar panels, emphasis must also be placed on selecting environmentally friendly materials as raw materials.",
@@ -618,7 +618,7 @@ window.BOARD = {
     "ID": "D1",
     "Determinant": "Factor conditions",
     "Question": "Does China keep its cost lead (energy, labour, scale, skills, capital)?",
-    "Evidence: fact as stated, with date": "China is the cheapest place to make every PV component: about 10% below India, 20% below the US and 35% below Europe (IEA, S8). Capacity is nearly double global demand (S22).",
+    "Evidence: fact as stated, with date": "China is the cheapest place to make every PV component: about 10% below India, 20% below the US and 35% below Europe (IEA, S8). Margins are near zero: Longi's 2025 gross margin was 0.81% (S22).",
     "Source ID": "S8, S22",
     "Indicator": "Export unit value",
     "Implication for the manufacturer": "China has a wealth of expertise and a large workforce. In addition, the production equipment is of high quality and the supply of raw materials is guaranteed. Note (27.11): raw materials are mostly made in China (S8), but forced-labour rules (EU ban from Dec 2027, S26) affect exports.",
@@ -654,7 +654,7 @@ window.BOARD = {
     "ID": "D4",
     "Determinant": "Firm strategy, structure and rivalry",
     "Question": "How intense is rivalry among Chinese producers, and is consolidation happening?",
-    "Evidence: fact as stated, with date": "Longi lost CNY 6.4 bn in 2025, its second loss year, and Trina expected a loss of up to CNY 7.5 bn (S22).",
+    "Evidence: fact as stated, with date": "Longi lost CNY 6.4 bn and Trina CNY 7.0 bn in 2025, net margins of -9.1% and -10.5% (S22).",
     "Source ID": "S22",
     "Indicator": "Export unit value",
     "Implication for the manufacturer": "The company's strategy is to be prepared to adapt quickly, as the sector is highly competitive and quality is a prerequisite for its operations. Consequently, the company must maintain competitive prices and ensure it uses state-of-the-art technology.",
@@ -666,7 +666,7 @@ window.BOARD = {
     "ID": "D5",
     "Determinant": "Government",
     "Question": "How do Chinese and foreign governments shape costs and market access?",
-    "Evidence: fact as stated, with date": "Home: export rebate ended 1 Apr 2026 (S14); market pricing for new projects from Jun 2025 (S15). Abroad: US Section 232 from 4 Dec 2026 (S24), EU resilience criteria from 30 Dec 2025 (S31).",
+    "Evidence: fact as stated, with date": "Home: export rebate ended 1 Apr 2026 (S14); market pricing for new projects from Jun 2025 (S15). Abroad: US Section 232 from 4 Dec 2026 (S24), EU auction criteria from 2026 (S31).",
     "Source ID": "S14, S15, S24, S31",
     "Indicator": null,
     "Implication for the manufacturer": "The Chinese government supports the use of renewable energy sources and publicly encourages businesses and individuals to use them. Note (27.11): support now works more through targets than subsidies (S15, S14).",
@@ -693,7 +693,7 @@ window.BOARD = {
     "Uncertainty": "Access to Western markets (US tariffs, EU dependence on China)",
     "One end": "Open",
     "Other end": "Closed",
-    "Why it is uncertain (evidence)": "Closing: US Section 232 tariffs from Dec 2026 on top of Section 301 (S24); EU auction resilience criteria from Dec 2025 (S31). Opening: EU imports of Chinese panels set records in Mar 2026 during the energy crisis (S12).",
+    "Why it is uncertain (evidence)": "Closing: US Section 232 tariffs from Dec 2026 on top of Section 301 (S24); EU auction resilience criteria from 2026 (S31). Opening: EU imports of Chinese panels set records in Mar 2026 during the energy crisis (S12).",
     "Source IDs": "S24, S31, S12",
     "Status": "Verified"
    },
@@ -717,7 +717,7 @@ window.BOARD = {
     "d": 3.0,
     "p": 2.0,
     "m": 0.0,
-    "why": "Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and capacity is still about double demand (S22). Margin unchanged.",
+    "why": "Volume +3%/yr: between the recent trend (exports -4.3% in the 12 months to Oct 2026, S11) and BNEF's +6% global recovery in 2027 (S20). Price +2%/yr: prices have recovered since mid-2025 (+15.8% for TOPCon, S18; export price/kg +22.5%, S11), but part of that was the one-off end of the export rebate (S14) and margins are still near zero (S22). Margin unchanged.",
     "src": "S9, S10, S11, S20, S18, S14, S22",
     "status": "Verified"
    },
@@ -730,7 +730,7 @@ window.BOARD = {
     "d": -10.0,
     "p": -15.0,
     "m": -3.0,
-    "why": "Volume -10%/yr: the size of the 2026 global fall (-10.8%, S20), with Western access closing (EU+US take 35% of exports, S11). Price -15%/yr: the price war returns; half the 2024 fall of 33% (S42), with capacity about double demand (S22). Margin -3 pp: leaders already lost money in 2025 (Longi's net loss CNY 6.4 bn on CNY 70.4 bn revenue, S22).",
+    "why": "Volume -10%/yr: the size of the 2026 global fall (-10.8%, S20), with Western access closing (EU+US take 35% of exports, S11). Price -15%/yr: the price war returns; half the 2024 fall of 33% (S42). Margin -3 pp: leaders already lost money in 2025 (net margins: Longi -9.1%, Trina -10.5%, S22).",
     "src": "S9, S20, S11, S42, S22",
     "status": "Verified"
    },
@@ -743,8 +743,8 @@ window.BOARD = {
     "d": 10.0,
     "p": 5.0,
     "m": 2.0,
-    "why": "Volume +10%/yr: installations outside China grow 15% in 2026 (S19) and exports doubled in a month when fuel prices spiked (Mar 2026, S12). Price +5%/yr: below the 15.8% rise of the past year (S18) because capacity is still ample (S22). Margin +2 pp: higher prices and fuller factories.",
-    "src": "S9, S12, S19, S18, S22",
+    "why": "Volume +10%/yr: installations outside China grow 15% in 2026 (S19) and exports doubled in a month when fuel prices spiked (Mar 2026, S12). Price +5%/yr: below the 15.8% rise of the past year (S18), as part of that rise was one-off (S14). Margin +2 pp: higher prices and fuller factories.",
+    "src": "S9, S12, S19, S18, S14",
     "status": "Verified"
    }
   ],
@@ -755,7 +755,7 @@ window.BOARD = {
     "max": 20.0,
     "label": "Starting operating margin",
     "unit": "%",
-    "basis": "close to the 2025 margins of the market leaders (Longi's module/cell gross margin 0.19%, net loss CNY 6.4 bn, S22). 1% operating is optimistic for a smaller firm.",
+    "basis": "close to the 2025 gross margins of the market leaders (Longi 0.81%, Trina 1.02%; both made net losses, S22). 1% operating is optimistic for a smaller firm.",
     "status": "Verified"
    },
    "share": {
@@ -976,7 +976,7 @@ window.BOARD = {
      "C": -1
     },
     "sig": "G1, G3",
-    "why": "margins near zero and capacity about double demand (S22); shedding weak lines helps most in Challenging, loses share in a boom.",
+    "why": "margins near zero; leaders lost money in 2025 (S22); shedding weak lines helps most in Challenging, loses share in a boom.",
     "bench": false,
     "status": "Verified"
    },
@@ -1079,7 +1079,7 @@ window.BOARD = {
     "Issue or feedback": "Final Word file disagreed with the board (domestic-only company, old numbers, PESTLE/Diamond without evidence)",
     "Changes made": "Export share 0%; PESTLE/Diamond evidence and source IDs; memo peak and record from data; Word returned with tracked changes (team accepted); scenario numbers and option scores drafted from evidence; sources trimmed to 20",
     "Prompt or code example": "Prompt: \"Unify all of the places where they disagree\"",
-    "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors; team re-computed the holdout errors in the Excel Forecast sheet and they match the board (Data checks DC1-DC3)",
+    "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors; team re-computed the holdout errors in the Excel Forecast sheet and they match the board (Data checks DC1-DC3); team opened all 20 sources and checked each cited fact; two paywalled sources (Caixin, PV Tech) replaced with open ones and the claims adjusted",
     "Effect on quality": "One consistent story; every framework row has a sourced fact",
     "Screenshot / version link": "docs/Business_Intelligence_final.docx",
     "Owner": "Raul + team"

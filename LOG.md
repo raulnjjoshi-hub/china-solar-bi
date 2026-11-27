@@ -61,6 +61,8 @@ and screenshots so the two can be cross-referenced.
   exists in Sources (0 missing); Word file validated and rendered; no console errors.
   Team re-computed the holdout errors independently in the Excel Forecast sheet: 20.90 / 18.52 / 30.59%, identical to
   the board (Data checks DC1-DC3). Workbook tidied: example rows removed, sources sorted, layout unified.
+  Team opened all 20 sources and checked each cited fact; two were paywalled (Caixin, PV Tech) and were replaced
+  with open sources (Developments Today, SolarPower Europe). The unsupported claim "capacity is double demand" was dropped.
 - **Effect:** one story across the Word file, workbook and board; every PESTLE and Diamond row now has a sourced fact.
 
 ## Stage 5: User test and revision (planned 27.11)
