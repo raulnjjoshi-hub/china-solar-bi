@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 14:54",
+  "built": "2026-11-27 14:55",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -806,7 +806,7 @@ window.BOARD = {
       "m": 0.0
      }
     },
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "N2",
@@ -836,7 +836,7 @@ window.BOARD = {
       "m": 0.0
      }
     },
-    "status": "Proposal"
+    "status": "Verified"
    },
    {
     "id": "N3",
@@ -866,7 +866,7 @@ window.BOARD = {
       "m": 0.0
      }
     },
-    "status": "Proposal"
+    "status": "Verified"
    }
   ],
   "signposts": [
