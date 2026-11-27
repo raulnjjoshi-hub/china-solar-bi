@@ -48,4 +48,15 @@ and screenshots so the two can be cross-referenced.
 - **Effect:** the memo and scenarios now speak about 2027 with data only one month old.
 - **Screenshots:** docs/screenshots/v3-*.
 
+## Stage 4b: Team narrative, workbook and board aligned (27.11.2026)
+- **Issue:** the team's final Word file and the board disagreed: company sells only in China (board assumed 20% exports);
+  narrative numbers (1,300 kt record; 1,285/1,305/1,245 kt) came from the old Comtrade data; PESTLE and Diamond had no
+  evidence or sources and some claims contradicted 2025-2026 facts; a signpost had no data.
+- **Changes:** export share set to 0% (exporting is an option to test). Team's PESTLE/Diamond text placed next to dated
+  evidence and source IDs (S8, S12-S37); notes added where evidence disagrees. Memo: March peak and record computed from
+  data; "demand for PV cells" corrected to exports. Word file returned with tracked changes and a comment for the team
+  (docs/Business_Intelligence_final_tracked.docx). Sources the team considered but did not use are listed as such (S38-S40).
+- **Verification:** memo figures re-read from the rendered board; Word file validated and rendered; no console errors.
+- **Effect:** one story across the Word file, workbook and board; every PESTLE and Diamond row now has a sourced fact.
+
 ## Stage 5: User test and revision (planned 27.11)

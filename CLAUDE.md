@@ -14,7 +14,8 @@ assumed must be visibly distinct. LLM-generated numbers are never evidence.
 - Country/industry assigned: China, renewable energy. Focus: solar PV manufacturing (cells, modules).
 - User (team's case, 26.11): privately owned Chinese PV manufacturer that today sells to Chinese companies and
   private individuals. Decision: how much capacity to run and whether to expand into export markets. China's
-  monthly PV exports are the industry indicator (no monthly domestic sales data). Export share C2 = 20% (illustrative).
+  monthly PV exports are the industry indicator (no monthly domestic sales data). Team's final Word (27.11): Company C
+  sells only in China, so export share C2 = 0% (exporting is an option). Word with tracked changes: docs/Business_Intelligence_final_tracked.docx.
 - Forecast target (team confirms in Forecast target sheet): proposal F1 = China PV exports, HS 854142
   (cells) and 854143 (modules), UN Comtrade, monthly, volume with value alongside. HS 2022 split means
   clean series from 2022. Second series: NBS monthly solar cell output.

@@ -395,8 +395,10 @@ function bottomLine(){const v=volSer(),u=findSer(/USD billion|, value$/i)||B.ser
 function memo(){const v=volSer(),g=domSer(),u=B.series.find(x=>/value/i.test(x.label)&&!/unit/i.test(x.label)),fc=v.fc.methods[method(v)];
   const n=v.val.length,last=fmtMonth(v.time[n-1]),FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const price=(end)=>u?sum12(u,end)*1000/sum12(v,end):null,pch=u?(price(0)/price(12)-1)*100:null;
-  const yrs=['2024','2025'].map(y=>{const ks=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t.startsWith(y));if(ks.length<12)return null;const pk=ks.reduce((a,b)=>b[1]>a[1]?b:a),av=ks.reduce((a,b)=>a+b[1],0)/12;return {pk,ratio:pk[1]/av}}).filter(Boolean);
-  const peak=yrs.length===2&&yrs[0].pk[0].slice(5)===yrs[1].pk[0].slice(5)?FULL[+yrs[0].pk[0].slice(5)-1]:null;
+  const mv=ym=>{const i=v.time.indexOf(ym);return i<0?null:v.val[i]};const lastFull=+v.time[n-1].slice(0,4)-(v.time[n-1].endsWith('-12')?0:1);
+  const yrs=[];for(let y=lastFull-2;y<=lastFull;y++){const ks=v.time.map((t,i)=>[t,v.val[i]]).filter(([t])=>t.startsWith(String(y)));const w=[mv((y-1)+'-12'),mv(y+'-01'),mv(y+'-02')],m=mv(y+'-03');if(ks.length<12||w.includes(null)||m==null)continue;yrs.push({pkMar:ks.reduce((a,b)=>b[1]>a[1]?b:a)[0].endsWith('-03'),ratio:m/(w.reduce((a,b)=>a+b,0)/3)})}
+  const marPeaks=yrs.filter(y=>y.pkMar).length,peak=yrs.length&&marPeaks*2>yrs.length;
+  let rec=0;v.val.forEach((x,i)=>{if(x>v.val[rec])rec=i});
   const sh=mkt('cn_pv_share_eu_us'),em=mkt('cn_pv_share_emerging');
   const tot=(ser,fcArr,aheadT,yr)=>ser.time.reduce((a,t,i)=>t.startsWith(yr)?a+ser.val[i]:a,0)+aheadT.reduce((a,t,i)=>t.startsWith(yr)?a+fcArr[i]:a,0);
   const idx27=v.fc.aheadTime.map((t,i)=>t.startsWith('2027')?i:-1).filter(i=>i>=0);
@@ -405,17 +407,17 @@ function memo(){const v=volSer(),g=domSer(),u=B.series.find(x=>/value/i.test(x.l
   const line=k=>{const o=sc[k];if(!o)return '';return ` By our scenario settings, 2027 exports total ${fv(o.e)} kt (${pct((o.e/e26-1)*100)} on 2026)${o.d!=null?` and domestic solar generation ${fv(o.d)} TWh (${pct((o.d/g26-1)*100)})`:''}.`};
   const trip=(C.signposts||[]).filter(r=>signpostReading(r).trip);
   const H3=t=>`<h3 style="margin:var(--sp-3) 0 6px">${t}</h3>`,P=t=>`<p>${t}</p>`;
-  return H3('The decision')+P('The need for solar power has grown rapidly over the last two decades. If the trend continues, the need for solar panels will keep rising. Management has to decide how to meet the increasing need while preparing for sudden changes, looking ahead to 2027.')+
+  return H3('The decision')+P('The need for solar power has grown rapidly over the last two decades. If the trend continues, the need for solar panels will keep rising. Management has to decide how to meet the increasing need while preparing for sudden changes, looking ahead to 2027. Company C sells only in China today; exporting is one of the options. China\'s exports are our monthly indicator of the industry, because no monthly data on domestic panel sales is public.')+
    H3('What we know')+P(`In the 12 months to ${last}, China exported ${fv(sum12(v))} kt of solar cells and modules (${pct(yoy12(v))} on the previous 12 months)${u?`, worth ${f2(sum12(u))} bn USD (${pct(yoy12(u))}). The average export price was ${f2(price(0))} USD/kg (${pct(pch)})`:''}.`+
      (g?` At home, China's solar generation, our indicator of domestic demand, grew ${pct(yoy12(g))} to ${fv(sum12(g))} TWh.`:'')+
      (sh&&em?` The EU and US took ${f1(avg12(sh))}% of export weight (${f1(avg12(sh,12))}% a year earlier), while the Middle East, Latin America and Africa took ${f1(avg12(em))}% (${f1(avg12(em,12))}%).`:'')+
-     (peak?` Exports peak in ${peak}, at about ${f1(Math.min(...yrs.map(y=>y.ratio)))}–${f1(Math.max(...yrs.map(y=>y.ratio)))} times the monthly average.`:''))+
+     (peak?` Exports usually peak in March (the top month in ${marPeaks} of the last ${yrs.length} full years), at about ${f1(Math.min(...yrs.map(y=>y.ratio)))}–${f1(Math.max(...yrs.map(y=>y.ratio)))} times the winter months (December–February).`:'')+` The record so far is ${fv(v.val[rec])} kt in ${fmtMonth(v.time[rec])}`+(v.time[rec]==='2026-03'?`, when the energy crisis and the end of the export tax rebate pulled orders forward (S12, S33).`:'.'))+
    H3('The three possibilities')+
-   (sc.base?P(`<b style="font-weight:600;color:var(--sc-base)">Base.</b> Current trends continue, so demand for PV cells keeps reaching new highs. Combined with China's goal of reducing carbon further, this means steady growth for PV manufacturers.${line('base')}`):'')+
+   (sc.base?P(`<b style="font-weight:600;color:var(--sc-base)">Base.</b> Current trends continue, so China\'s solar exports keep reaching new highs. Combined with China's goal of reducing carbon further, this means steady growth for PV manufacturers.${line('base')}`):'')+
    (sc.opt?P(`<b style="font-weight:600;color:var(--sc-opt-ink)">Optimistic.</b> China strengthens its lead in PV manufacturing, and high fuel prices in Europe push demand towards renewable energy, including solar.${line('opt')}`):'')+
    (sc.chal?P(`<b style="font-weight:600;color:var(--sc-chal)">Challenging.</b> Demand for renewable energy grows more slowly as new data centres need steady power such as nuclear, and fossil fuel prices fall if the war in Ukraine, Iran or both ends.${line('chal')}`):'')+
    H3('The options')+`<ul class="plain-list" style="font-size:15px"><li>Diversify sales to emerging markets such as the Middle East and Latin America.</li><li>Build assembly capacity outside China to deal with tariffs and local-content rules.</li><li>Cut or pause marginal capacity instead of fighting on price.</li></ul>`+
-   H3('What we would do')+P('Prepare to expand into emerging markets in case demand from Europe and North America falls or stays flat. If demand drops sharply, stop expanding capacity immediately. If cell output does not change, shift to higher-efficiency production lines.')+
+   H3('What we would do')+P('Prepare to expand into emerging markets in case demand from Europe and North America falls or stays flat. If demand drops sharply, stop expanding capacity immediately. If export volume holds steady, shift to higher-efficiency production lines.')+
    (trip.length?P(`<span class="small" style="color:var(--ink-2)">Signposts tripped now: ${trip.map(r=>{const x=signpostReading(r);return esc(r['Indicator'])+' at '+(x.level?f1(x.v)+'%':pct(x.v))+' (threshold '+esc(r['Tripped when']||'')+' '+esc(r['Threshold'])+esc(r['Unit']||'')+')'}).join('; ')}.</span>`):'')}
 function renderOverview(){const b=C.brief||{},v=volSer(),fc=v.fc.methods[method(v)],n=v.val.length,obs=B.series.slice(0,3);
   const O=C.options||[],rob=O.filter(o=>verdictOf(o)==='robust'),con=O.filter(o=>verdictOf(o)==='contingent'),sp=C.signposts||[];
