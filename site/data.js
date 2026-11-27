@@ -1,6 +1,6 @@
 window.BOARD = {
  "meta": {
-  "built": "2026-11-27 14:08",
+  "built": "2026-11-27 14:27",
   "demo": false,
   "snapshot": "2026-11-26",
   "horizon": 14
@@ -173,23 +173,6 @@ window.BOARD = {
     "Checked by": "Raul"
    },
    {
-    "ID": "S19",
-    "Name (exact table or article title)": "China solar down 29%, everywhere else up 15% (BloombergNEF outlook)",
-    "Provider / publisher": "pv magazine USA (BloombergNEF forecast)",
-    "Dataset code / table": null,
-    "URL (table-level link)": "https://pv-magazine-usa.com/2026/10/15/china-solar-down-29-everywhere-else-up-15/",
-    "Variables and filters": "China and global solar installations, 2025 estimate and 2026 forecast",
-    "Unit": "GW",
-    "Frequency": "One-off",
-    "Coverage (from-to)": "2025-2026",
-    "Access date": "2026-11-26",
-    "Missing values and flags": null,
-    "Transformations applied": null,
-    "Used for": "Limits (domestic demand proxy); evidence D2, U2",
-    "Status": "Candidate - not verified",
-    "Checked by": null
-   },
-   {
     "ID": "S12",
     "Name (exact table or article title)": "Chinese solar exports double in a month to hit record high amid energy crisis (23 Apr 2026)",
     "Provider / publisher": "Ember",
@@ -271,6 +254,23 @@ window.BOARD = {
     "Missing values and flags": null,
     "Transformations applied": null,
     "Used for": "P3, P8",
+    "Status": "Candidate - not verified",
+    "Checked by": null
+   },
+   {
+    "ID": "S19",
+    "Name (exact table or article title)": "China solar down 29%, everywhere else up 15% (BloombergNEF outlook)",
+    "Provider / publisher": "pv magazine USA (BloombergNEF forecast)",
+    "Dataset code / table": null,
+    "URL (table-level link)": "https://pv-magazine-usa.com/2026/10/15/china-solar-down-29-everywhere-else-up-15/",
+    "Variables and filters": "China and global solar installations, 2025 estimate and 2026 forecast",
+    "Unit": "GW",
+    "Frequency": "One-off",
+    "Coverage (from-to)": "2025-2026",
+    "Access date": "2026-11-26",
+    "Missing values and flags": null,
+    "Transformations applied": null,
+    "Used for": "Limits (domestic demand proxy); evidence D2, U2",
     "Status": "Candidate - not verified",
     "Checked by": null
    },
@@ -411,7 +411,80 @@ window.BOARD = {
     "Checked by": null
    }
   ],
-  "checks": [],
+  "checks": [
+   {
+    "ID": "DC1",
+    "Indicator": "Holdout MAPE, seasonal naive (export volume)",
+    "Period": "11/2025-10/2026",
+    "Value on board": 20.9,
+    "Value at source": 20.898,
+    "Match?": "OK",
+    "Source ID": "S11",
+    "Checked by": "Raul + team",
+    "Date": "2026-11-27",
+    "Note": "Board (Python) vs team Excel Forecast sheet"
+   },
+   {
+    "ID": "DC2",
+    "Indicator": "Holdout MAPE, 12-month average (export volume)",
+    "Period": "11/2025-10/2026",
+    "Value on board": 18.52,
+    "Value at source": 18.518,
+    "Match?": "OK",
+    "Source ID": "S11",
+    "Checked by": "Raul + team",
+    "Date": "2026-11-27",
+    "Note": "Board (Python) vs team Excel Forecast sheet"
+   },
+   {
+    "ID": "DC3",
+    "Indicator": "Holdout MAPE, linear trend (export volume)",
+    "Period": "11/2025-10/2026",
+    "Value on board": 30.59,
+    "Value at source": 30.593,
+    "Match?": "OK",
+    "Source ID": "S11",
+    "Checked by": "Raul + team",
+    "Date": "2026-11-27",
+    "Note": "Board (Python) vs team Excel Forecast sheet"
+   },
+   {
+    "ID": "DC4",
+    "Indicator": "Export weight total, million tonnes",
+    "Period": "2022-2024",
+    "Value on board": 31.71,
+    "Value at source": 31.709,
+    "Match?": "OK",
+    "Source ID": "S11 vs S1",
+    "Checked by": "Raul (script)",
+    "Date": "2026-11-26",
+    "Note": "Ember (board) vs UN Comtrade"
+   },
+   {
+    "ID": "DC5",
+    "Indicator": "Export value total, bn USD",
+    "Period": "2022-2024",
+    "Value on board": 120.63,
+    "Value at source": 120.62,
+    "Match?": "OK",
+    "Source ID": "S11 vs S1",
+    "Checked by": "Raul (script)",
+    "Date": "2026-11-26",
+    "Note": "Ember (board) vs UN Comtrade"
+   },
+   {
+    "ID": "DC6",
+    "Indicator": "Export weight total, million tonnes",
+    "Period": "2025",
+    "Value on board": 13.393,
+    "Value at source": 13.393,
+    "Match?": "OK",
+    "Source ID": "S11 vs S1",
+    "Checked by": "Raul (script)",
+    "Date": "2026-11-26",
+    "Note": "Ember (board) vs UN Comtrade annual"
+   }
+  ],
   "pestle": [
    {
     "ID": "P1",
@@ -1006,7 +1079,7 @@ window.BOARD = {
     "Issue or feedback": "Final Word file disagreed with the board (domestic-only company, old numbers, PESTLE/Diamond without evidence)",
     "Changes made": "Export share 0%; PESTLE/Diamond evidence and source IDs; memo peak and record from data; Word returned with tracked changes (team accepted); scenario numbers and option scores drafted from evidence; sources trimmed to 20",
     "Prompt or code example": "Prompt: \"Unify all of the places where they disagree\"",
-    "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors",
+    "Verification performed": "Every cited source ID exists in Sources (scripted check, 0 missing); Word validated; board rendered without errors; team re-computed the holdout errors in the Excel Forecast sheet and they match the board (Data checks DC1-DC3)",
     "Effect on quality": "One consistent story; every framework row has a sourced fact",
     "Screenshot / version link": "docs/Business_Intelligence_final.docx",
     "Owner": "Raul + team"

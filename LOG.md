@@ -59,6 +59,8 @@ and screenshots so the two can be cross-referenced.
   Optimistic, as 2025-26 data show; starting margin 1%); sources trimmed from 42 to the 20 that carry the board's claims.
 - **Verification:** memo figures re-read from the rendered board; scripted check that every source ID cited on the board
   exists in Sources (0 missing); Word file validated and rendered; no console errors.
+  Team re-computed the holdout errors independently in the Excel Forecast sheet: 20.90 / 18.52 / 30.59%, identical to
+  the board (Data checks DC1-DC3). Workbook tidied: example rows removed, sources sorted, layout unified.
 - **Effect:** one story across the Word file, workbook and board; every PESTLE and Diamond row now has a sourced fact.
 
 ## Stage 5: User test and revision (planned 27.11)
