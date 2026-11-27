@@ -373,6 +373,7 @@ def main():
         "series": series,
         "markets": markets,
         "crosscheck": xcheck,
+        "readme": (ROOT / "README.md").read_text(encoding="utf-8") if (ROOT / "README.md").exists() else "",
     }
     OUT.write_text("window.BOARD = " + json.dumps(board, ensure_ascii=False, indent=1) + ";\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)}  demo={demo}  series={len(series)}")

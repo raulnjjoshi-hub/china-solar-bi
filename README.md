@@ -7,8 +7,8 @@ Chinese companies and private individuals. Management must decide how to meet gr
 sudden change: how much capacity to run and whether to start exporting. Public customs and electricity data feed a
 validated forecast to December 2027 and three scenarios (Base, Challenging, Optimistic); options are tested against them.
 
-**Live board:** https://raulnjjoshi-hub.github.io/china-solar-bi/
-**Backup:** `site/` folder in the submission zip; open `site/index.html` in any browser (works offline).
+- **Live board:** https://raulnjjoshi-hub.github.io/china-solar-bi/
+- **Backup:** `site/` folder in the submission zip; open `site/index.html` in any browser (works offline).
 
 ## How to open and use
 
